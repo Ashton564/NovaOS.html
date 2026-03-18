@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NovaOS 1.0</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&family=Ubuntu+Mono&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;user-select:none;}
+:root{--red:#d70751;--red2:#a00038;--teal:#26a96c;--wh:#2e2e38;--whi:#252529;--wbg:#f6f5f4;}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Ubuntu',sans-serif;}
+#desktop{width:100%;height:100%;position:relative;overflow:hidden;background:radial-gradient(ellipse 100% 70% at 15% 110%,rgba(215,7,81,.22),transparent 55%),radial-gradient(ellipse 60% 50% at 90% -5%,rgba(38,169,108,.13),transparent 50%),linear-gradient(155deg,#1c1c24,#0a0a12);}
+#desktop::after{content:'';position:absolute;bottom:-80px;right:-80px;width:380px;height:380px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Ccircle cx='100' cy='100' r='90' fill='none' stroke='%23d70751' stroke-width='3' opacity='.06'/%3E%3Ccircle cx='100' cy='100' r='60' fill='none' stroke='%23d70751' stroke-width='2' opacity='.04'/%3E%3C/svg%3E") center/contain no-repeat;pointer-events:none;}
+/* PANEL */
+#panel{position:absolute;top:0;left:0;right:0;height:28px;background:rgba(10,10,18,.96);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;z-index:600;}
+#actbtn{padding:0 12px;height:100%;display:flex;align-items:center;gap:7px;color:#ddd;font-size:12px;font-weight:500;cursor:pointer;transition:background .12s;}
+#actbtn:hover{background:rgba(215,7,81,.2);}
+.orb{width:13px;height:13px;border-radius:50%;flex-shrink:0;background:radial-gradient(circle at 38% 35%,#ff6ba0,var(--red) 55%,#7a003a);box-shadow:0 0 7px rgba(215,7,81,.7);}
+#apptitle{padding:0 10px;height:100%;display:flex;align-items:center;color:#777;font-size:11px;border-right:1px solid rgba(255,255,255,.06);}
+#pclk{flex:1;text-align:center;color:#bbb;font-size:12px;cursor:pointer;font-weight:500;}
+#pclk:hover{color:#fff;}
+#pclkdate{font-size:10px;color:#555;margin-left:5px;}
+#pright{display:flex;align-items:center;padding-right:2px;}
+.pt{height:28px;padding:0 6px;display:flex;align-items:center;color:#bbb;font-size:13px;cursor:pointer;border-radius:3px;position:relative;}
+.pt:hover{background:rgba(255,255,255,.08);}
+.pbadge{position:absolute;top:3px;right:2px;width:8px;height:8px;border-radius:50%;background:var(--red);font-size:7px;display:flex;align-items:center;justify-content:center;color:#fff;pointer-events:none;display:none;}
+/* QUICK SETTINGS */
+#qs{display:none;position:absolute;top:30px;right:8px;z-index:700;width:300px;background:rgba(16,16,24,.97);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.1);border-radius:14px;box-shadow:0 12px 48px rgba(0,0,0,.6);padding:16px;animation:popIn .15s ease;}
+#qs.vis{display:block;}
+@keyframes popIn{from{opacity:0;transform:translateY(-8px) scale(.97)}to{opacity:1;transform:none}}
+.qsrow{display:flex;gap:8px;margin-bottom:8px;}
+.qstile{flex:1;background:rgba(255,255,255,.07);border-radius:10px;padding:10px;cursor:pointer;transition:background .12s;border:1px solid transparent;text-align:center;}
+.qstile:hover{background:rgba(255,255,255,.12);}
+.qstile.on{background:rgba(215,7,81,.25);border-color:rgba(215,7,81,.4);}
+.qtico{font-size:18px;margin-bottom:2px;}
+.qtilab{font-size:9px;color:#bbb;}
+.qsslider{margin:6px 0;}
+.qssl{font-size:10px;color:#666;margin-bottom:3px;display:flex;justify-content:space-between;}
+input[type=range]{width:100%;height:4px;-webkit-appearance:none;background:rgba(255,255,255,.15);border-radius:2px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--red);cursor:pointer;}
+.qsdiv{height:1px;background:rgba(255,255,255,.07);margin:10px 0;}
+.qsbtns{display:flex;gap:6px;}
+.qsbtn{flex:1;padding:7px;background:rgba(255,255,255,.07);border:none;border-radius:8px;color:#ccc;cursor:pointer;font-size:11px;font-family:Ubuntu,sans-serif;}
+.qsbtn:hover{background:rgba(255,255,255,.14);}
+.qsbtn.red{background:rgba(215,7,81,.2);color:#f88;}
+/* NOTIF CENTER */
+#nc{display:none;position:absolute;top:30px;right:8px;z-index:700;width:310px;background:rgba(16,16,24,.97);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.1);border-radius:14px;box-shadow:0 12px 48px rgba(0,0,0,.6);max-height:480px;flex-direction:column;animation:popIn .15s ease;}
+#nc.vis{display:flex;}
+.nchdr{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;}
+.nchtit{color:#fff;font-size:13px;font-weight:500;}
+.ncclr{color:var(--red);font-size:11px;cursor:pointer;}
+.nclist{overflow-y:auto;flex:1;}
+.ncitem{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.04);display:flex;gap:10px;}
+.ncico{font-size:18px;flex-shrink:0;margin-top:1px;}
+.nctit{font-size:12px;color:#fff;font-weight:500;margin-bottom:2px;}
+.ncmsg{font-size:11px;color:rgba(255,255,255,.4);line-height:1.4;}
+.nctm{font-size:9px;color:rgba(255,255,255,.2);margin-top:2px;}
+.ncempty{padding:28px;text-align:center;color:rgba(255,255,255,.2);font-size:12px;}
+/* OVERLAY */
+#ov{display:none;position:absolute;inset:28px 0 0 0;z-index:550;background:rgba(6,6,12,.92);backdrop-filter:blur(16px);flex-direction:column;align-items:center;padding:28px 20px;overflow-y:auto;}
+#ov.vis{display:flex;animation:fI .15s ease;}
+@keyframes fI{from{opacity:0}to{opacity:1}}
+.ovsearch{width:320px;padding:10px 18px;border-radius:22px;margin-bottom:22px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#fff;font-size:13px;font-family:Ubuntu,sans-serif;outline:none;flex-shrink:0;}
+.ovsearch:focus{border-color:rgba(215,7,81,.5);}
+.ovsearch::placeholder{color:rgba(255,255,255,.28);}
+.ovlabel{font-size:10px;color:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;align-self:flex-start;width:100%;max-width:680px;}
+.ovgrid{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-start;max-width:680px;width:100%;}
+.ovapp{width:80px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:10px 5px;border-radius:12px;transition:background .1s;}
+.ovapp:hover{background:rgba(215,7,81,.2);}
+.ovapp .oi{font-size:32px;}
+.ovapp span{font-size:10px;color:#bbb;text-align:center;line-height:1.3;}
+/* DESKTOP ICONS */
+.dicons{position:absolute;top:38px;right:12px;display:flex;flex-direction:column;gap:4px;}
+.dico{width:72px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:8px 6px;border-radius:8px;transition:background .1s;}
+.dico:hover{background:rgba(255,255,255,.1);}
+.dico .de{font-size:34px;line-height:1;}
+.dico span{font-size:11px;color:#ddd;text-align:center;text-shadow:0 1px 4px rgba(0,0,0,.9);}
+/* WORKSPACES */
+#wsbar{position:absolute;bottom:60px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:490;}
+.ws{width:28px;height:16px;border-radius:4px;background:rgba(255,255,255,.1);cursor:pointer;transition:all .15s;border:1px solid transparent;}
+.ws:hover{background:rgba(255,255,255,.2);}
+.ws.act{background:var(--red);box-shadow:0 0 8px rgba(215,7,81,.5);}
+/* WINDOW */
+.window{position:absolute;min-width:300px;min-height:200px;border-radius:10px;background:var(--wbg);border:1px solid rgba(0,0,0,.55);box-shadow:0 4px 18px rgba(0,0,0,.4);display:flex;flex-direction:column;z-index:100;overflow:hidden;}
+.window.active{box-shadow:0 12px 48px rgba(0,0,0,.65);}
+.window.minimized{display:none;}
+.titlebar{background:var(--wh);border-radius:10px 10px 0 0;padding:0 10px 0 8px;height:34px;display:flex;align-items:center;cursor:move;border-bottom:1px solid rgba(0,0,0,.35);flex-shrink:0;}
+.window:not(.active) .titlebar{background:var(--whi);}
+.window:not(.active) .wt{color:rgba(255,255,255,.3)!important;}
+.wbtns{display:flex;gap:6px;margin-right:10px;}
+.wb{width:13px;height:13px;border-radius:50%;border:none;cursor:pointer;flex-shrink:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.2);}
+.wb:hover{filter:brightness(1.2);}
+.wbc{background:#e74c3c;}.wbm{background:#f39c12;}.wbx{background:#27ae60;}
+.wi{font-size:13px;margin-right:5px;}
+.wt{flex:1;font-size:12px;font-weight:500;color:rgba(255,255,255,.85);text-align:center;margin-right:46px;}
+.wcont{flex:1;overflow:hidden;border-radius:0 0 10px 10px;position:relative;}
+.rh{position:absolute;bottom:0;right:0;width:14px;height:14px;cursor:nwse-resize;background:linear-gradient(135deg,transparent 60%,rgba(0,0,0,.15) 60%);z-index:5;}
+/* DOCK */
+#dock{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(14,14,22,.88);backdrop-filter:blur(28px);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:5px 8px;display:flex;align-items:center;gap:2px;z-index:500;box-shadow:0 4px 28px rgba(0,0,0,.55);}
+.dsep{width:1px;height:30px;background:rgba(255,255,255,.1);margin:0 3px;}
+.di{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;font-size:24px;transition:transform .15s cubic-bezier(.2,1,.4,1);}
+.di:hover{transform:translateY(-6px) scale(1.16);}
+.di.run::after{content:'';position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--red);}
+.ditt{position:absolute;bottom:50px;left:50%;transform:translateX(-50%);background:rgba(14,14,22,.95);color:#ddd;font-size:11px;padding:4px 9px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s;border:1px solid rgba(255,255,255,.1);}
+.di:hover .ditt{opacity:1;}
+/* CONTEXT MENU */
+.ctxm{position:absolute;z-index:900;background:rgba(18,18,26,.98);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:4px;min-width:190px;box-shadow:0 8px 32px rgba(0,0,0,.55);animation:cxI .1s ease;}
+@keyframes cxI{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.cxi{padding:7px 12px;border-radius:5px;cursor:pointer;display:flex;align-items:center;gap:8px;color:#ddd;font-size:12px;transition:background .08s;}
+.cxi:hover{background:rgba(215,7,81,.28);}
+.cxi.danger:hover{background:rgba(255,60,60,.2);color:#ff8888;}
+.cxs{height:1px;background:rgba(255,255,255,.07);margin:3px 6px;}
+/* TOAST NOTIFS */
+.notif{position:absolute;right:10px;background:rgba(18,18,26,.97);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.09);border-radius:10px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.5);z-index:800;max-width:290px;animation:nfI .2s cubic-bezier(.2,1,.4,1);}
+@keyframes nfI{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+.nbar{height:2px;background:var(--red);}
+.nbody{display:flex;gap:10px;padding:10px 14px;align-items:flex-start;}
+.nico{font-size:18px;margin-top:1px;}
+.ntitle{font-size:12px;font-weight:500;color:#fff;margin-bottom:2px;}
+.nmsg{font-size:11px;color:rgba(255,255,255,.5);line-height:1.4;}
+.nclose{cursor:pointer;color:rgba(255,255,255,.25);font-size:14px;}
+.nclose:hover{color:#fff;}
+/* LOCK SCREEN */
+#lockscreen{display:none;position:absolute;inset:0;z-index:999;background:radial-gradient(ellipse 100% 70% at 15% 110%,rgba(215,7,81,.3),transparent 55%),linear-gradient(155deg,#0d0d18,#030308);flex-direction:column;align-items:center;justify-content:center;gap:14px;}
+#lockscreen.vis{display:flex;}
+#ltime{font-size:72px;font-weight:200;color:#fff;letter-spacing:-2px;}
+#ldate{font-size:15px;color:rgba(255,255,255,.35);margin-top:-10px;}
+#lpin input{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:22px;padding:10px 24px;color:#fff;font-size:18px;text-align:center;letter-spacing:6px;outline:none;width:200px;font-family:Ubuntu,sans-serif;}
+#lpin input:focus{border-color:rgba(215,7,81,.5);}
+#lunlock{font-size:11px;color:rgba(255,255,255,.3);cursor:pointer;text-align:center;}
+/* BROWSER */
+.brow{display:flex;flex-direction:column;height:100%;}
+.btabs{display:flex;background:#e0dfdd;padding:4px 6px 0;gap:2px;flex-shrink:0;overflow-x:auto;}
+.btab{display:flex;align-items:center;gap:5px;padding:5px 10px;background:#f6f5f4;border-radius:7px 7px 0 0;font-size:11px;color:#444;cursor:pointer;max-width:140px;border:1px solid #ccc;border-bottom:1px solid #f6f5f4;flex-shrink:0;}
+.btab:not(.act){background:rgba(0,0,0,.06);border-bottom-color:#e0dfdd;}
+.btabx{color:#aaa;margin-left:3px;line-height:1;font-size:12px;}
+.btabx:hover{color:#e74c3c;}
+.btabnew{width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#888;font-size:16px;border-radius:5px;align-self:center;}
+.btabnew:hover{background:rgba(0,0,0,.1);}
+.bbar{display:flex;align-items:center;gap:4px;padding:4px 7px;background:#f0efee;border-bottom:1px solid #ddd;flex-shrink:0;}
+.nbtn{width:25px;height:25px;border-radius:6px;border:1px solid rgba(0,0,0,.12);background:linear-gradient(180deg,#fff,#e8e8e8);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.nbtn:hover{background:#ddd;}
+.urlbar{flex:1;height:25px;border:1px solid #bbb;border-radius:12px;padding:0 12px;font-size:12px;background:#fff;outline:none;font-family:Ubuntu,sans-serif;color:#333;}
+.urlbar:focus{border-color:var(--red);}
+.bframe{flex:1;border:none;width:100%;}
+.bstat{padding:2px 8px;background:#f5f5f5;border-top:1px solid #e0e0e0;font-size:10px;color:#666;height:17px;flex-shrink:0;}
+/* TERMINAL */
+.term{background:#1b1b23;color:#c8c8d4;font-family:'Ubuntu Mono',monospace;font-size:13px;padding:10px;height:100%;display:flex;flex-direction:column;}
+.tout{flex:1;overflow-y:auto;white-space:pre-wrap;word-break:break-all;line-height:1.5;}
+.tl{margin:0;}.tu{color:#26a96c;font-weight:700;}.th{color:#4a9eff;font-weight:700;}.tp{color:#e84393;}.ta{color:#888;}
+.terr{color:#ff6b6b;}.tok{color:#26a96c;}.twarn{color:#f0c040;}.twine{color:#c8a0e8;}.tinfo{color:#4a9eff;}
+.tinrow{display:flex;align-items:center;margin-top:2px;}
+.tpre{white-space:nowrap;font-family:'Ubuntu Mono',monospace;font-size:13px;}
+.tfield{background:transparent;border:none;outline:none;color:#c8c8d4;font-family:'Ubuntu Mono',monospace;font-size:13px;flex:1;caret-color:#c8c8d4;}
+/* FILE MANAGER */
+.fm{background:#f6f5f4;height:100%;display:flex;flex-direction:column;font-size:12px;}
+.fmhdr{background:#3a3a42;padding:4px 7px;display:flex;align-items:center;gap:4px;border-bottom:1px solid rgba(0,0,0,.3);flex-shrink:0;}
+.fmhb{width:25px;height:25px;border-radius:6px;border:none;background:rgba(255,255,255,.08);color:#ccc;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.fmhb:hover{background:rgba(255,255,255,.16);}
+.fmbread{flex:1;display:flex;align-items:center;gap:2px;background:rgba(0,0,0,.2);border-radius:6px;padding:3px 10px;color:#bbb;font-size:11px;overflow:hidden;}
+.fbsep{color:rgba(255,255,255,.22);margin:0 2px;flex-shrink:0;}.fbp{cursor:pointer;padding:1px 4px;border-radius:3px;white-space:nowrap;}
+.fbp:hover{background:rgba(215,7,81,.3);color:#fff;}.fbp.cur{color:#fff;font-weight:500;}
+.fmbody{display:flex;flex:1;overflow:hidden;}
+.fmsb{width:140px;background:#edecea;border-right:1px solid #ddd;padding:6px 0;overflow-y:auto;flex-shrink:0;}
+.fmsbs{font-size:10px;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:1px;padding:8px 12px 3px;}
+.fmsi{padding:5px 10px;cursor:pointer;font-size:11px;color:#444;display:flex;align-items:center;gap:6px;border-left:2px solid transparent;}
+.fmsi:hover{background:rgba(215,7,81,.07);}.fmsi.act{background:rgba(215,7,81,.12);color:var(--red2);font-weight:500;border-left-color:var(--red);}
+.fmfiles{flex:1;padding:8px;overflow-y:auto;}
+.fmfiles.grid{display:flex;flex-wrap:wrap;align-content:flex-start;gap:2px;}
+.fmfiles.list{display:flex;flex-direction:column;gap:1px;}
+.fmf{cursor:pointer;border-radius:6px;transition:background .08s;}
+.fmfiles.grid .fmf{width:78px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;}
+.fmfiles.list .fmf{display:flex;align-items:center;gap:8px;padding:4px 8px;}
+.fmf:hover{background:rgba(215,7,81,.1);}.fmf.sel{background:rgba(215,7,81,.18);}
+.ffi{font-size:32px;line-height:1;flex-shrink:0;}
+.fmfiles.list .ffi{font-size:18px;}
+.ffn{font-size:10px;text-align:center;color:#333;word-break:break-all;line-height:1.2;}
+.fmfiles.list .ffn{font-size:12px;text-align:left;flex:1;}
+.ffm{font-size:10px;color:#aaa;}
+.fmfoot{padding:3px 10px;background:#edecea;border-top:1px solid #ddd;font-size:10px;color:#777;display:flex;justify-content:space-between;flex-shrink:0;}
+/* NOTEPAD */
+.np{height:100%;display:flex;flex-direction:column;background:#fff;}
+.nptb{background:#f0efee;border-bottom:1px solid #ddd;padding:4px 8px;display:flex;gap:4px;align-items:center;}
+.npb{padding:3px 9px;border-radius:5px;font-size:11px;border:1px solid rgba(0,0,0,.1);background:#fff;cursor:pointer;color:#333;font-family:Ubuntu,sans-serif;}
+.npb:hover{background:#e8e8e8;}
+.npta{flex:1;resize:none;border:none;outline:none;padding:12px 16px;font-family:'Ubuntu Mono',monospace;font-size:13px;color:#2a2a2a;line-height:1.6;}
+.npst{background:#f0efee;border-top:1px solid #ddd;padding:3px 12px;font-size:10px;color:#666;display:flex;gap:16px;}
+/* CALCULATOR */
+.calc{height:100%;display:flex;flex-direction:column;background:#1e1e2a;font-family:'Ubuntu Mono',monospace;}
+.calcdisplay{padding:12px 16px 8px;background:#12121a;border-bottom:1px solid rgba(255,255,255,.05);}
+.calcexpr{font-size:11px;color:rgba(255,255,255,.3);min-height:16px;text-align:right;overflow:hidden;white-space:nowrap;}
+.calcval{font-size:32px;color:#fff;text-align:right;overflow:hidden;white-space:nowrap;}
+.calcgrid{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,.04);}
+.ck{display:flex;align-items:center;justify-content:center;background:#1e1e2a;cursor:pointer;font-size:16px;color:#ddd;transition:background .08s;border:none;font-family:'Ubuntu Mono',monospace;}
+.ck:hover{background:#2a2a3a;}.ck:active{background:#333;}
+.ck.op{color:#d70751;font-weight:700;}.ck.fn{color:#4a9eff;font-size:13px;}.ck.eq{background:rgba(215,7,81,.22);color:#d70751;font-weight:700;}
+.ck.eq:hover{background:rgba(215,7,81,.38);}.ck.clr{color:#f39c12;}.ck.span2{grid-column:span 2;}
+/* CALENDAR */
+.cal{height:100%;display:flex;flex-direction:column;background:#f6f5f4;font-size:12px;}
+.calhdr{background:#3a3a42;padding:8px 12px;display:flex;align-items:center;border-bottom:1px solid rgba(0,0,0,.25);flex-shrink:0;}
+.calmonthlbl{flex:1;text-align:center;color:#fff;font-size:14px;font-weight:500;}
+.calhb{width:26px;height:26px;border-radius:6px;border:none;background:rgba(255,255,255,.08);color:#ccc;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.calhb:hover{background:rgba(255,255,255,.16);}
+.caldays{display:grid;grid-template-columns:repeat(7,1fr);background:#3a3a42;border-bottom:1px solid rgba(0,0,0,.2);}
+.cald{text-align:center;padding:4px 0;font-size:10px;font-weight:600;color:rgba(255,255,255,.35);text-transform:uppercase;}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);flex:1;gap:1px;background:#ddd;}
+.calday{background:#f6f5f4;min-height:52px;padding:4px;cursor:pointer;position:relative;}
+.calday:hover{background:#eee;}
+.calday.today .caldaynum{background:var(--red);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;}
+.calday.othermonth{background:#f0efed;}.calday.othermonth .caldaynum{color:#ccc;}
+.caldaynum{font-size:12px;font-weight:500;color:#333;width:20px;height:20px;display:flex;align-items:center;justify-content:center;}
+.calevent{font-size:9px;background:rgba(215,7,81,.12);color:var(--red2);padding:1px 4px;border-radius:3px;margin-top:2px;overflow:hidden;white-space:nowrap;}
+.calfooter{padding:5px 12px;background:#edecea;border-top:1px solid #ddd;font-size:11px;color:#666;flex-shrink:0;}
+/* CLOCK */
+.clockapp{height:100%;display:flex;flex-direction:column;background:#1e1e2a;}
+.clocktabs{display:flex;background:#12121a;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;}
+.clocktab{flex:1;padding:8px;text-align:center;font-size:11px;color:#777;cursor:pointer;border-bottom:2px solid transparent;}
+.clocktab.act{color:var(--red);border-bottom-color:var(--red);}
+.clockbody{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;}
+.clockdigital{font-size:46px;font-weight:200;color:#fff;font-family:'Ubuntu Mono',monospace;letter-spacing:2px;}
+.clocksub{font-size:12px;color:rgba(255,255,255,.3);margin-top:-10px;text-align:center;}
+.swlabel{font-size:42px;font-weight:200;color:#fff;font-family:'Ubuntu Mono',monospace;letter-spacing:1px;}
+.swbtns{display:flex;gap:10px;}
+.swbtn{padding:8px 22px;border-radius:20px;border:none;cursor:pointer;font-size:13px;font-family:Ubuntu,sans-serif;font-weight:500;}
+.swbtn.start{background:var(--red);color:#fff;}.swbtn.stop{background:#f39c12;color:#fff;}.swbtn.reset{background:rgba(255,255,255,.1);color:#ccc;}
+/* NOTES */
+.notesapp{height:100%;display:flex;background:#faf9f7;}
+.notessb{width:175px;background:#f0efed;border-right:1px solid #ddd;display:flex;flex-direction:column;}
+.notessbtop{padding:7px 8px;background:#3a3a42;display:flex;align-items:center;gap:6px;}
+.notessbttl{flex:1;font-size:12px;color:#fff;font-weight:500;}
+.notesnewbtn{width:22px;height:22px;border-radius:5px;border:none;background:rgba(255,255,255,.12);color:#fff;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.notesnewbtn:hover{background:rgba(215,7,81,.5);}
+.noteslist{flex:1;overflow-y:auto;}
+.notesitem{padding:8px 10px;border-bottom:1px solid rgba(0,0,0,.06);cursor:pointer;}
+.notesitem:hover{background:rgba(215,7,81,.05);}
+.notesitem.act{background:rgba(215,7,81,.1);border-left:2px solid var(--red);}
+.notesittl{font-size:12px;font-weight:500;color:#222;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.notesiprv{font-size:10px;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.notesitm{font-size:10px;color:#bbb;margin-top:2px;}
+.notescont{flex:1;display:flex;flex-direction:column;}
+.notestoolbar{padding:4px 8px;background:#f0efed;border-bottom:1px solid #ddd;display:flex;gap:4px;align-items:center;}
+.ntb{padding:3px 8px;border-radius:4px;border:1px solid rgba(0,0,0,.1);background:#fff;font-size:11px;cursor:pointer;color:#333;font-family:Ubuntu,sans-serif;}
+.ntb:hover{background:#e8e8e8;}
+.notestitle{border:none;outline:none;font-size:16px;font-weight:600;padding:12px 16px 4px;color:#111;font-family:Ubuntu,sans-serif;background:transparent;width:100%;}
+.notestextarea{flex:1;border:none;outline:none;resize:none;padding:4px 16px 12px;font-size:13px;color:#333;line-height:1.7;font-family:Ubuntu,sans-serif;background:transparent;}
+/* SYSTEM MONITOR */
+.smon{height:100%;display:flex;flex-direction:column;background:#f6f5f4;}
+.smtabs{display:flex;background:#edecea;border-bottom:1px solid #ddd;flex-shrink:0;}
+.smt{padding:7px 14px;cursor:pointer;border-right:1px solid #ddd;color:#555;font-size:11px;border-top:2px solid transparent;white-space:nowrap;}
+.smt.act{background:#f6f5f4;color:var(--red);font-weight:500;border-top-color:var(--red);}
+.smbody{flex:1;overflow-y:auto;}
+.smtbl{width:100%;border-collapse:collapse;}
+.smtbl th{background:#edecea;padding:5px 10px;text-align:left;border-bottom:2px solid #ddd;font-size:10px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:.5px;position:sticky;top:0;}
+.smtbl td{padding:4px 10px;border-bottom:1px solid #eee;font-size:11px;color:#333;}
+.smtbl tr:hover td{background:rgba(215,7,81,.04);}
+.smfoot{padding:7px 12px;background:#edecea;border-top:1px solid #ddd;display:flex;gap:12px;align-items:center;flex-shrink:0;}
+.ubw{display:flex;flex-direction:column;gap:2px;min-width:90px;}
+.ubl{font-size:10px;color:#555;display:flex;justify-content:space-between;}
+.ub{height:5px;background:#ddd;border-radius:3px;overflow:hidden;}
+.ubf{height:100%;border-radius:3px;transition:width .5s;}
+.ubfc{background:linear-gradient(90deg,var(--red),#ff6b9d);}.ubfm{background:linear-gradient(90deg,var(--teal),#4ec9a0);}.ubfd{background:linear-gradient(90deg,#4a9eff,#8ab4ff);}
+/* SETTINGS */
+.sett{height:100%;display:flex;background:#f6f5f4;}
+.setnav{width:165px;background:#edecea;border-right:1px solid #ddd;padding:6px 0;overflow-y:auto;flex-shrink:0;}
+.setsec{font-size:10px;color:#999;padding:8px 12px 3px;text-transform:uppercase;letter-spacing:1px;font-weight:600;}
+.setni{padding:7px 12px;cursor:pointer;color:#444;display:flex;align-items:center;gap:7px;font-size:12px;border-left:2px solid transparent;}
+.setni:hover{background:rgba(215,7,81,.07);}.setni.act{background:rgba(215,7,81,.12);color:var(--red2);font-weight:500;border-left-color:var(--red);}
+.setcont{flex:1;padding:18px;overflow-y:auto;}
+.settit{font-size:18px;font-weight:300;color:#222;margin-bottom:14px;}
+.setcard{background:#fff;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.05);}
+.setct{padding:8px 14px;background:#f8f8f8;border-bottom:1px solid #eee;font-size:10px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.8px;}
+.setr{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-bottom:1px solid #f0f0f0;}
+.setr:last-child{border-bottom:none;}
+.srlab{color:#333;font-size:12px;}.srsub{color:#999;font-size:10px;margin-top:1px;}
+.tog{width:38px;height:22px;border-radius:11px;background:#ccc;position:relative;cursor:pointer;transition:background .18s;flex-shrink:0;}
+.tog.on{background:var(--red);}
+.tog::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .18s;box-shadow:0 1px 3px rgba(0,0,0,.25);}
+.tog.on::after{left:18px;}
+.setsel{padding:4px 8px;border:1px solid #ccc;border-radius:6px;background:#fff;color:#333;font-size:11px;}
+.kbd{display:inline-block;background:#edecea;border:1px solid #ccc;border-radius:4px;padding:2px 6px;font-family:'Ubuntu Mono',monospace;font-size:10px;color:#444;}
+/* STORE */
+.store{height:100%;display:flex;flex-direction:column;background:#f6f5f4;}
+.storehdr{background:linear-gradient(135deg,#230812,#160e1c);padding:10px 14px;display:flex;align-items:center;gap:12px;border-bottom:2px solid var(--red);flex-shrink:0;}
+.ssrch{padding:6px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);color:#fff;font-size:12px;outline:none;width:200px;font-family:Ubuntu,sans-serif;}
+.ssrch:focus{border-color:rgba(215,7,81,.5);}
+.ssrch::placeholder{color:rgba(255,255,255,.28);}
+.storecats{display:flex;gap:4px;padding:6px 10px;background:#edecea;border-bottom:1px solid #ddd;overflow-x:auto;flex-shrink:0;}
+.scat{padding:4px 12px;border-radius:14px;font-size:11px;cursor:pointer;white-space:nowrap;border:1px solid #bbb;background:#fff;color:#555;transition:all .1s;}
+.scat:hover{border-color:var(--red);color:var(--red);}.scat.act{background:var(--red);color:#fff;border-color:var(--red);}
+.sgrid{flex:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;padding:10px;overflow-y:auto;align-content:flex-start;}
+.scard{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px;transition:box-shadow .12s;}
+.scard:hover{box-shadow:0 2px 10px rgba(0,0,0,.08);}
+.sctop{display:flex;align-items:center;gap:8px;}.scico{font-size:26px;}
+.scname{font-weight:600;color:#222;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.scver{font-size:10px;color:#888;}.scdesc{font-size:11px;color:#555;line-height:1.4;flex:1;}
+.scfoot{display:flex;align-items:center;justify-content:space-between;}
+.scstars{color:#f0a020;font-size:10px;}
+.scbtn{padding:4px 11px;border-radius:12px;border:none;cursor:pointer;font-size:11px;font-weight:500;font-family:Ubuntu,sans-serif;}
+.scbtn.ni{background:var(--red);color:#fff;}.scbtn.ni:hover{background:var(--red2);}
+.scbtn.ins{background:#e8f5e9;color:#2e7d32;}.scbtn.ing{background:#fff3e0;color:#e65100;cursor:default;}
+.stfoot{padding:4px 12px;background:#edecea;border-top:1px solid #ddd;font-size:10px;color:#777;display:flex;justify-content:space-between;flex-shrink:0;}
+/* MUSIC */
+.mplay{height:100%;display:flex;flex-direction:column;background:#1a1a24;}
+.mpartwork{height:150px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#2a1a2e,#1a1228);flex-shrink:0;}
+.mpartworkimg{width:110px;height:110px;border-radius:12px;background:linear-gradient(135deg,#3d2040,#1e1028);display:flex;align-items:center;justify-content:center;font-size:48px;box-shadow:0 8px 32px rgba(0,0,0,.5);}
+.mpinfo{padding:10px 16px 6px;text-align:center;flex-shrink:0;}
+.mptitle{font-size:14px;font-weight:600;color:#fff;margin-bottom:2px;}
+.mpartist{font-size:11px;color:rgba(255,255,255,.4);}
+.mpcontrols{padding:0 14px 8px;flex-shrink:0;}
+.mpprog{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.mptime{font-size:10px;color:rgba(255,255,255,.3);font-family:'Ubuntu Mono',monospace;width:32px;flex-shrink:0;}
+.mpbtns{display:flex;align-items:center;justify-content:center;gap:14px;}
+.mpbtn{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.55);font-size:18px;padding:5px;}
+.mpbtn:hover{color:#fff;}
+.mpbtn.play{width:42px;height:42px;background:var(--red);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;color:#fff;box-shadow:0 4px 14px rgba(215,7,81,.4);}
+.mpvol{display:flex;align-items:center;gap:8px;padding:6px 2px 0;}
+.mpvolico{font-size:13px;color:rgba(255,255,255,.3);}
+.mplist{flex:1;overflow-y:auto;border-top:1px solid rgba(255,255,255,.06);}
+.mplitem{display:flex;align-items:center;gap:10px;padding:7px 14px;cursor:pointer;}
+.mplitem:hover{background:rgba(255,255,255,.05);}
+.mplitem.act{background:rgba(215,7,81,.1);}
+.mplnum{width:18px;font-size:10px;color:rgba(255,255,255,.2);text-align:right;flex-shrink:0;}
+.mplname{flex:1;font-size:12px;color:#ddd;}
+.mplname span{font-size:10px;color:rgba(255,255,255,.32);}
+.mpldur{font-size:10px;color:rgba(255,255,255,.28);font-family:'Ubuntu Mono',monospace;}
+/* IMAGE VIEWER */
+.imgv{height:100%;display:flex;flex-direction:column;background:#111118;}
+.imgvtb{background:#1e1e2a;padding:5px 8px;display:flex;align-items:center;gap:5px;border-bottom:1px solid rgba(255,255,255,.05);flex-shrink:0;}
+.ivbtn{padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:#ccc;cursor:pointer;font-size:11px;font-family:Ubuntu,sans-serif;}
+.ivbtn:hover{background:rgba(255,255,255,.12);}
+.imgvcanvas{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.imgvcanvas img{max-width:100%;max-height:100%;object-fit:contain;transition:transform .2s;}
+.imgvinfo{padding:3px 10px;background:#1e1e2a;border-top:1px solid rgba(255,255,255,.05);font-size:10px;color:rgba(255,255,255,.28);display:flex;gap:14px;flex-shrink:0;}
+/* ABOUT */
+.about{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(155deg,#1c1c24,#080810);padding:20px;gap:8px;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.2);border-radius:3px;}
+
+/* START MENU */
+#startbtn{height:28px;padding:0 10px;display:flex;align-items:center;gap:6px;cursor:pointer;transition:background .12s;border-right:1px solid rgba(255,255,255,.07);}
+#startbtn:hover,#startbtn.open{background:rgba(215,7,81,.25);}
+#startbtn .sico{font-size:15px;}
+#startbtn .slbl{font-size:12px;font-weight:500;color:#ddd;}
+#startmenu{display:none;position:absolute;bottom:56px;left:0;z-index:700;width:340px;background:rgba(14,14,22,.97);backdrop-filter:blur(28px);border:1px solid rgba(255,255,255,.12);border-radius:0 14px 14px 0;box-shadow:4px 0 32px rgba(0,0,0,.6);flex-direction:column;overflow:hidden;animation:smIn .18s cubic-bezier(.2,1,.4,1);}
+#startmenu.vis{display:flex;}
+@keyframes smIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.smtop{padding:16px 16px 10px;border-bottom:1px solid rgba(255,255,255,.07);}
+.smuser{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.smuico{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 38% 35%,#ff6ba0,var(–red) 55%,#7a003a);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;font-weight:700;}
+.smunm{font-size:13px;font-weight:500;color:#fff;}
+.smusub{font-size:10px;color:rgba(255,255,255,.35);}
+.smsrch{width:100%;padding:7px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:#fff;font-size:12px;outline:none;font-family:Ubuntu,sans-serif;box-sizing:border-box;}
+.smsrch:focus{border-color:rgba(215,7,81,.5);}
+.smsrch::placeholder{color:rgba(255,255,255,.28);}
+.smpinned{padding:10px 14px 6px;}
+.smsec{font-size:10px;color:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;}
+.smgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;}
+.smapp{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;border-radius:8px;cursor:pointer;transition:background .1s;}
+.smapp:hover{background:rgba(215,7,81,.2);}
+.smapp .smai{font-size:26px;}
+.smapp .smal{font-size:10px;color:rgba(255,255,255,.7);text-align:center;line-height:1.2;}
+.smlist{border-top:1px solid rgba(255,255,255,.07);padding:8px 8px 4px;}
+.smitem{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;cursor:pointer;transition:background .1s;}
+.smitem:hover{background:rgba(215,7,81,.18);}
+.smitem .smii{font-size:18px;width:26px;text-align:center;}
+.smitem .smin{font-size:12px;color:#ddd;}
+.smitem .smis{font-size:10px;color:rgba(255,255,255,.3);}
+.smbot{display:flex;border-top:1px solid rgba(255,255,255,.07);padding:6px 8px;}
+.smbotbtn{flex:1;padding:7px;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:8px;cursor:pointer;font-size:11px;color:rgba(255,255,255,.5);transition:background .1s;}
+.smbotbtn:hover{background:rgba(255,255,255,.08);color:#ddd;}
+</style>
+
+</head>
+<body>
+<div id="desktop" oncontextmenu="showCtx(event)">
+<div id="panel">
+  <div id="startbtn" onclick="togStart()" title="Start Menu">
+    <div class="sico">🔴</div><div class="slbl">Nova</div>
+  </div>
+  <div id="actbtn" onclick="togOv()" title="Activities (Super)"><div class="orb"></div></div>
+  <div id="apptitle"></div>
+  <div id="pclk">00:00<span id="pclkdate"></span></div>
+  <div id="pright">
+    <div class="pt" onclick="togQS()" id="qstrigger" title="Quick Settings">📶<span class="pbadge" id="qsbadge"></span></div>
+    <div class="pt" onclick="togNC()" id="bellbtn" title="Notifications">🔔<span class="pbadge" id="nbell_badge"></span></div>
+    <div class="pt" onclick="showPwr(event)" title="Power">⏻</div>
+  </div>
+</div>
+
+<!-- QUICK SETTINGS -->
+
+<div id="qs">
+  <div class="qsrow">
+    <div class="qstile on" id="qt-wifi" onclick="qsTile('wifi',this)"><div class="qtico">📶</div><div class="qtilab">Wi-Fi</div></div>
+    <div class="qstile" id="qt-bt" onclick="qsTile('bluetooth',this)"><div class="qtico">🔵</div><div class="qtilab">Bluetooth</div></div>
+    <div class="qstile" id="qt-nl" onclick="qsTile('nightlight',this)"><div class="qtico">🌙</div><div class="qtilab">Night Light</div></div>
+    <div class="qstile" id="qt-ap" onclick="qsTile('airplane',this)"><div class="qtico">✈️</div><div class="qtilab">Airplane</div></div>
+  </div>
+  <div class="qsslider"><div class="qssl"><span>☀️ Brightness</span><span id="bv">80%</span></div>
+    <input type="range" min="10" max="100" value="80" oninput="document.getElementById('bv').textContent=this.value+'%'"/></div>
+  <div class="qsslider"><div class="qssl"><span>🔊 Volume</span><span id="vv">75%</span></div>
+    <input type="range" min="0" max="100" value="75" oninput="document.getElementById('vv').textContent=this.value+'%'"/></div>
+  <div class="qsdiv"></div>
+  <div class="qsbtns">
+    <button class="qsbtn" onclick="openApp('settings');closeQS()">⚙ Settings</button>
+    <button class="qsbtn" onclick="lockScreen();closeQS()">🔒 Lock</button>
+    <button class="qsbtn red" onclick="showPwr(event);closeQS()">⏻ Power</button>
+  </div>
+</div>
+
+<!-- NOTIFICATION CENTER -->
+
+<div id="nc">
+  <div class="nchdr"><span class="nchtit">🔔 Notifications</span><span class="ncclr" onclick="clearAllNotifs()">Clear All</span></div>
+  <div class="nclist" id="nclist"><div class="ncempty">No notifications</div></div>
+</div>
+
+<!-- START MENU -->
+
+<div id="startmenu">
+  <div class="smtop">
+    <div class="smuser">
+      <div class="smuico">N</div>
+      <div><div class="smunm">nova</div><div class="smusub">Administrator · Debian Nova 12</div></div>
+    </div>
+    <input class="smsrch" id="smsrch" placeholder="🔍 Search apps, files, settings..." oninput="smFilter(this.value)"/>
+  </div>
+  <div class="smpinned" id="smpinned">
+    <div class="smsec">Pinned</div>
+    <div class="smgrid" id="smgrid">
+      <div class="smapp" onclick="smLaunch('terminal')"><div class="smai">🖥️</div><div class="smal">Cmd Prompt</div></div>
+      <div class="smapp" onclick="smLaunch('browser')"><div class="smai">🌐</div><div class="smal">Browser</div></div>
+      <div class="smapp" onclick="smLaunch('files')"><div class="smai">📁</div><div class="smal">Files</div></div>
+      <div class="smapp" onclick="smLaunch('notepad')"><div class="smai">📝</div><div class="smal">Text Editor</div></div>
+      <div class="smapp" onclick="smLaunch('calculator')"><div class="smai">🧮</div><div class="smal">Calculator</div></div>
+      <div class="smapp" onclick="smLaunch('calendar')"><div class="smai">📅</div><div class="smal">Calendar</div></div>
+      <div class="smapp" onclick="smLaunch('notes')"><div class="smai">📌</div><div class="smal">Notes</div></div>
+      <div class="smapp" onclick="smLaunch('music')"><div class="smai">🎵</div><div class="smal">Music</div></div>
+      <div class="smapp" onclick="smLaunch('imageviewer')"><div class="smai">🖼️</div><div class="smal">Images</div></div>
+      <div class="smapp" onclick="smLaunch('clock')"><div class="smai">🕐</div><div class="smal">Clocks</div></div>
+      <div class="smapp" onclick="smLaunch('taskman')"><div class="smai">📊</div><div class="smal">System Mon.</div></div>
+      <div class="smapp" onclick="smLaunch('store')"><div class="smai">🏪</div><div class="smal">Software</div></div>
+    </div>
+  </div>
+  <div class="smlist" id="smalllist" style="display:none">
+    <div class="smsec">All Apps</div>
+    <div id="smallgrid"></div>
+  </div>
+  <div class="smbot">
+    <div class="smbotbtn" onclick="smLaunch('settings')">⚙️ Settings</div>
+    <div class="smbotbtn" onclick="smLaunch('about')">ℹ️ About</div>
+    <div class="smbotbtn" onclick="lockScreen();closeStart()">🔒 Lock</div>
+    <div class="smbotbtn" onclick="showPwr();closeStart()" style="color:#f88">⏻ Power</div>
+  </div>
+</div>
+
+<!-- ACTIVITIES OVERLAY -->
+
+<div id="ov">
+  <input class="ovsearch" id="ovsrch" placeholder="🔍  Search applications..." oninput="filterOv(this.value)"/>
+  <div class="ovlabel">Applications</div>
+  <div class="ovgrid" id="ovgrid">
+    <div class="ovapp" onclick="openApp('browser');closeOv()"><div class="oi">🌐</div><span>Browser</span></div>
+    <div class="ovapp" onclick="openApp('files');closeOv()"><div class="oi">📁</div><span>Files</span></div>
+    <div class="ovapp" onclick="openApp('terminal');closeOv()"><div class="oi">🖥️</div><span>Cmd Prompt</span></div>
+    <div class="ovapp" onclick="openApp('notepad');closeOv()"><div class="oi">📝</div><span>Text Editor</span></div>
+    <div class="ovapp" onclick="openApp('calculator');closeOv()"><div class="oi">🧮</div><span>Calculator</span></div>
+    <div class="ovapp" onclick="openApp('calendar');closeOv()"><div class="oi">📅</div><span>Calendar</span></div>
+    <div class="ovapp" onclick="openApp('clock');closeOv()"><div class="oi">🕐</div><span>Clocks</span></div>
+    <div class="ovapp" onclick="openApp('notes');closeOv()"><div class="oi">📌</div><span>Notes</span></div>
+    <div class="ovapp" onclick="openApp('imageviewer');closeOv()"><div class="oi">🖼️</div><span>Image Viewer</span></div>
+    <div class="ovapp" onclick="openApp('music');closeOv()"><div class="oi">🎵</div><span>Music</span></div>
+    <div class="ovapp" onclick="openApp('taskman');closeOv()"><div class="oi">📊</div><span>System Monitor</span></div>
+    <div class="ovapp" onclick="openApp('settings');closeOv()"><div class="oi">⚙️</div><span>Settings</span></div>
+    <div class="ovapp" onclick="openApp('store');closeOv()"><div class="oi">🏪</div><span>Software Center</span></div>
+    <div class="ovapp" onclick="openApp('about');closeOv()"><div class="oi">ℹ️</div><span>About</span></div>
+  </div>
+</div>
+
+<!-- DESKTOP ICONS -->
+
+<div class="dicons">
+  <div class="dico" ondblclick="openApp('files')"><div class="de">🏠</div><span>Home</span></div>
+  <div class="dico" ondblclick="openApp('store')"><div class="de">🏪</div><span>Software Center</span></div>
+  <div class="dico" ondblclick="showN('Trash','Trash is empty.','🗑️')"><div class="de">🗑️</div><span>Trash</span></div>
+</div>
+
+<!-- WORKSPACES -->
+
+<div id="wsbar"></div>
+
+<!-- WINDOWS -->
+
+<div id="windows"></div>
+
+<!-- DOCK -->
+
+<div id="dock">
+  <div class="di" id="di-browser" onclick="openApp('browser')">🌐<div class="ditt">Browser</div></div>
+  <div class="di" id="di-files" onclick="openApp('files')">📁<div class="ditt">Files</div></div>
+  <div class="di" id="di-terminal" onclick="openApp('terminal')">🖥️<div class="ditt">Cmd Prompt</div></div>
+  <div class="di" id="di-notepad" onclick="openApp('notepad')">📝<div class="ditt">Text Editor</div></div>
+  <div class="di" id="di-notes" onclick="openApp('notes')">📌<div class="ditt">Notes</div></div>
+  <div class="dsep"></div>
+  <div class="di" id="di-calculator" onclick="openApp('calculator')">🧮<div class="ditt">Calculator</div></div>
+  <div class="di" id="di-calendar" onclick="openApp('calendar')">📅<div class="ditt">Calendar</div></div>
+  <div class="di" id="di-clock" onclick="openApp('clock')">🕐<div class="ditt">Clocks</div></div>
+  <div class="di" id="di-music" onclick="openApp('music')">🎵<div class="ditt">Music</div></div>
+  <div class="dsep"></div>
+  <div class="di" id="di-taskman" onclick="openApp('taskman')">📊<div class="ditt">System Monitor</div></div>
+  <div class="di" id="di-store" onclick="openApp('store')">🏪<div class="ditt">Software Center</div></div>
+  <div class="di" id="di-settings" onclick="openApp('settings')">⚙️<div class="ditt">Settings</div></div>
+</div>
+
+<!-- LOCK SCREEN -->
+
+<div id="lockscreen">
+  <div id="ltime">00:00</div>
+  <div id="ldate"></div>
+  <div id="lpin" style="margin-top:20px;display:flex;flex-direction:column;align-items:center;gap:10px;">
+    <input id="lpininp" type="password" placeholder="Enter PIN to unlock" autocomplete="off"/>
+    <div id="lunlock" style="font-size:11px;color:rgba(255,255,255,.28)">Press Enter or type any key to unlock</div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const wins={}, appCfg={
+  browser:{t:'Nova Browser',i:'🌐',w:800,h:540},
+  files:{t:'Files',i:'📁',w:640,h:460},
+  terminal:{t:'Cmd Prompt',i:'🖥️',w:600,h:420},
+  notepad:{t:'Text Editor',i:'📝',w:540,h:420},
+  calculator:{t:'Calculator',i:'🧮',w:280,h:420},
+  calendar:{t:'Calendar',i:'📅',w:560,h:460},
+  clock:{t:'Clocks',i:'🕐',w:340,h:360},
+  notes:{t:'Notes',i:'📌',w:560,h:440},
+  imageviewer:{t:'Image Viewer',i:'🖼️',w:600,h:460},
+  music:{t:'Music Player',i:'🎵',w:320,h:500},
+  taskman:{t:'System Monitor',i:'📊',w:600,h:440},
+  settings:{t:'Settings',i:'⚙️',w:600,h:480},
+  store:{t:'Nova Software Center',i:'🏪',w:760,h:560},
+  about:{t:'About NovaOS',i:'ℹ️',w:400,h:320},
+};
+let wZ=100, cpuInt=null, notifHistory=[], notifBadge=0;
+const qsState={wifi:true,bluetooth:false,nightlight:false,airplane:false};
+
+// CLOCK
+function tic(){const n=new Date();document.getElementById('pclk').childNodes[0].textContent=n.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});document.getElementById('pclkdate').textContent=' '+n.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'});}
+tic();setInterval(tic,1000);
+
+// OVERLAY
+function togOv(){const o=document.getElementById('ov');o.classList.toggle('vis');if(o.classList.contains('vis'))setTimeout(()=>document.getElementById('ovsrch').focus(),40);}
+function closeOv(){document.getElementById('ov').classList.remove('vis');}
+function filterOv(q){q=q.toLowerCase();document.querySelectorAll('.ovapp').forEach(el=>{el.style.display=(!q||el.querySelector('span').textContent.toLowerCase().includes(q))?'':'none';});}
+
+// QUICK SETTINGS
+function togQS(){closeNC();document.getElementById('qs').classList.toggle('vis');}
+function closeQS(){document.getElementById('qs').classList.remove('vis');}
+function qsTile(key,el){qsState[key]=!qsState[key];el.classList.toggle('on',qsState[key]);showN(el.querySelector('.qtilab').textContent,qsState[key]?'Enabled':'Disabled',el.querySelector('.qtico').textContent);}
+
+// NOTIFICATION CENTER
+function togNC(){closeQS();document.getElementById('nc').classList.toggle('vis');}
+function closeNC(){document.getElementById('nc').classList.remove('vis');}
+function clearAllNotifs(){notifHistory=[];renderNC();notifBadge=0;const b=document.getElementById('nbell_badge');if(b)b.style.display='none';}
+function renderNC(){const list=document.getElementById('nclist');if(!list)return;if(!notifHistory.length){list.innerHTML='<div class="ncempty">No notifications</div>';return;}list.innerHTML=notifHistory.slice().reverse().map(n=>`<div class="ncitem"><span class="ncico">${n.ico}</span><div style="flex:1"><div class="nctit">${n.title}</div><div class="ncmsg">${n.msg}</div><div class="nctm">${n.time}</div></div></div>`).join('');}
+
+// NOTIFICATIONS (toast)
+function showN(title,msg,ico='🔔'){
+  const now=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  notifHistory.push({title,msg,ico,time:now});notifBadge++;
+  const b=document.getElementById('nbell_badge');if(b){b.style.display='flex';b.textContent=notifBadge>9?'9+':String(notifBadge);}
+  renderNC();
+  const cnt=document.querySelectorAll('.notif').length;
+  const n=document.createElement('div');n.className='notif';n.style.top=(38+cnt*76)+'px';
+  const bar=document.createElement('div');bar.className='nbar';
+  const body=document.createElement('div');body.className='nbody';
+  const ic=document.createElement('span');ic.className='nico';ic.textContent=ico;
+  const tx=document.createElement('div');tx.style.flex='1';
+  const ti=document.createElement('div');ti.className='ntitle';ti.textContent=title;
+  const mg=document.createElement('div');mg.className='nmsg';mg.textContent=msg;
+  const cl=document.createElement('span');cl.className='nclose';cl.textContent='✕';cl.onclick=()=>n.remove();
+  tx.appendChild(ti);tx.appendChild(mg);body.appendChild(ic);body.appendChild(tx);body.appendChild(cl);
+  n.appendChild(bar);n.appendChild(body);document.getElementById('desktop').appendChild(n);
+  setTimeout(()=>{n.style.transition='all .25s';n.style.opacity='0';n.style.transform='translateX(20px)';setTimeout(()=>n.remove(),250);},4500);
+}
+
+// CONTEXT MENU
+function showCtx(e){
+  e.preventDefault();rmCtx();
+  const m=document.createElement('div');m.className='ctxm';m.id='ctxm';
+  [['📁','Open Files',()=>openApp('files')],['🖥️','Open Terminal',()=>openApp('terminal')],
+   ['📌','New Note',()=>openApp('notes')],null,
+   ['🎨','Change Background',()=>showN('Background','Wallpaper picker — NovaOS 1.2','🎨')],
+   ['⚙️','Display Settings',()=>openApp('settings')],null,
+   ['📷','Screenshot',()=>takeScreenshot()],['ℹ️','About',()=>openApp('about')]
+  ].forEach(it=>{
+    if(!it){const s=document.createElement('div');s.className='cxs';m.appendChild(s);return;}
+    const d=document.createElement('div');d.className='cxi';
+    d.innerHTML=`<span style="font-size:14px;width:18px;text-align:center">${it[0]}</span>${it[1]}`;
+    d.onclick=()=>{it[2]();rmCtx();};m.appendChild(d);
+  });
+  const dw=window.innerWidth,dh=window.innerHeight;
+  m.style.left=Math.min(e.clientX,dw-200)+'px';m.style.top=Math.min(e.clientY,dh-280)+'px';
+  document.getElementById('desktop').appendChild(m);
+}
+function rmCtx(){document.getElementById('ctxm')?.remove();}
+function showPwr(e){
+  if(e)e.stopPropagation();rmCtx();
+  const m=document.createElement('div');m.className='ctxm';m.id='ctxm';
+  [['🔒','Lock Screen',()=>lockScreen()],['🚪','Log Out',()=>{if(confirm('Log out of NovaOS?'))lockScreen();}],null,
+   ['💤','Suspend',()=>showN('Power','Suspending...','💤')],
+   ['🔄','Restart',()=>{if(confirm('Restart NovaOS?')){showN('Power','Restarting...','🔄');setTimeout(()=>location.reload(),1500);}}],
+   ['⏻','Power Off',()=>{if(confirm('Power off?'))showN('Power','Shutting down...','⏻');}]
+  ].forEach(it=>{
+    if(!it){const s=document.createElement('div');s.className='cxs';m.appendChild(s);return;}
+    const d=document.createElement('div');d.className='cxi';
+    d.innerHTML=`<span style="width:18px;text-align:center">${it[0]}</span>${it[1]}`;
+    d.onclick=()=>{it[2]();rmCtx();};m.appendChild(d);
+  });
+  m.style.right='8px';m.style.top='30px';document.getElementById('desktop').appendChild(m);
+}
+
+// Click-away
+document.getElementById('desktop').addEventListener('mousedown',e=>{
+  if(!e.target.closest('#ov')&&!e.target.closest('#actbtn'))closeOv();
+  if(!e.target.closest('#qs')&&!e.target.closest('#qstrigger'))closeQS();
+  if(!e.target.closest('#nc')&&!e.target.closest('#bellbtn'))closeNC();
+  rmCtx();
+});
+
+// LOCK SCREEN
+function lockScreen(){
+  const ls=document.getElementById('lockscreen');ls.classList.add('vis');
+  function tl(){const n=new Date();document.getElementById('ltime').textContent=n.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});document.getElementById('ldate').textContent=n.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});}
+  tl();const ti=setInterval(tl,1000);
+  const inp=document.getElementById('lpininp');inp.value='';setTimeout(()=>inp.focus(),100);
+  inp.onkeydown=function(e){if(e.key==='Enter'||this.value.length>=4){ls.classList.remove('vis');clearInterval(ti);this.onkeydown=null;showN('Session','Welcome back, Sudo','👤');}};
+}
+
+// SCREENSHOT
+function takeScreenshot(){
+  const ts=new Date().toISOString().slice(0,16).replace('T','_').replace(/:/g,'-');
+  const fn='screenshot_'+ts+'.png';
+  if(!fsT['/home/nova/Pictures'])fsT['/home/nova/Pictures']=[];
+  if(!fsT['/home/nova/Pictures'].includes(fn))fsT['/home/nova/Pictures'].push(fn);
+  showN('Screenshot','Saved: ~/Pictures/'+fn,'📷');
+}
+
+// WORKSPACES
+let curWS=0;
+(function initWS(){const bar=document.getElementById('wsbar');for(let i=0;i<4;i++){const w=document.createElement('div');w.className='ws'+(i===0?' act':'');w.title='Workspace '+(i+1);w.onclick=()=>{curWS=i;bar.querySelectorAll('.ws').forEach((b,j)=>b.classList.toggle('act',j===i));showN('Workspace','Switched to Workspace '+(i+1),'🖥️');};bar.appendChild(w);}})();
+
+// KEYBOARD SHORTCUTS
+document.addEventListener('keydown',e=>{
+  if(e.key==='F11'){e.preventDefault();takeScreenshot();}
+  if(e.altKey&&e.key==='F4'){e.preventDefault();const a=Object.keys(wins).find(k=>document.getElementById(k)?.classList.contains('active'));if(a)closeWin(a);}
+  if(e.ctrlKey&&e.altKey&&e.key==='t'){e.preventDefault();openApp('terminal');} // Ctrl+Alt+T = Cmd Prompt (Linux Mint style)
+  if(e.ctrlKey&&e.altKey&&e.key==='T'){e.preventDefault();openApp('terminal');}
+  if(e.ctrlKey&&e.altKey&&e.key==='f'){e.preventDefault();openApp('files');}
+  if(e.ctrlKey&&e.altKey&&e.key==='l'){e.preventDefault();lockScreen();}
+});
+
+// WINDOW MANAGEMENT
+function openApp(type){
+  const cfg=appCfg[type];if(!cfg)return;
+  const id='w_'+type+'_'+Date.now();
+  const D=document.getElementById('desktop');
+  const n=Object.keys(wins).length;
+  const left=Math.max(10,Math.min(D.clientWidth-cfg.w-10,80+n*26));
+  const top=Math.max(28,Math.min(D.clientHeight-cfg.h-66,50+n*20));
+  const win=document.createElement('div');win.className='window active';win.id=id;
+  win.style.cssText=`left:${left}px;top:${top}px;width:${cfg.w}px;height:${cfg.h}px;`;
+  const tb=document.createElement('div');tb.className='titlebar';
+  tb.innerHTML=`<div class="wbtns"><div class="wb wbc"></div><div class="wb wbm"></div><div class="wb wbx"></div></div><span class="wi">${cfg.i}</span><span class="wt">${cfg.t}</span>`;
+  tb.querySelector('.wbc').onclick=()=>closeWin(id);
+  tb.querySelector('.wbm').onclick=()=>minWin(id);
+  tb.querySelector('.wbx').onclick=()=>maxWin(id);
+  const wc=document.createElement('div');wc.className='wcont';wc.id='wc_'+id;
+  const rh=document.createElement('div');rh.className='rh';
+  win.appendChild(tb);win.appendChild(wc);win.appendChild(rh);
+  document.getElementById('windows').appendChild(win);
+  wins[id]={type,min:false,max:false,orig:null};
+  buildApp(type,id,wc);
+  makeDrag(win,tb);makeResize(win,rh);
+  win.addEventListener('mousedown',()=>focusW(id));
+  focusW(id);upDock();
+}
+function focusW(id){
+  Object.keys(wins).forEach(k=>document.getElementById(k)?.classList.remove('active'));
+  const w=document.getElementById(id);if(w){w.classList.add('active');w.style.zIndex=++wZ;}
+  const t=wins[id]?.type;document.getElementById('apptitle').textContent=t?appCfg[t]?.t||'':'';
+}
+function minWin(id){
+  const w=document.getElementById(id);if(!w)return;wins[id].min=true;
+  w.style.transition='all .18s';w.style.transform='scale(.7) translateY(80px)';w.style.opacity='0';
+  setTimeout(()=>{w.classList.add('minimized');w.style.transform='';w.style.opacity='';w.style.transition='';},180);
+}
+function maxWin(id){
+  const w=document.getElementById(id);if(!w)return;const s=wins[id];
+  if(!s.max){
+    s.orig={left:w.style.left,top:w.style.top,width:w.style.width,height:w.style.height};
+    w.style.transition='all .18s';w.style.left='0';w.style.top='28px';
+    w.style.width='100%';w.style.height='calc(100% - 86px)';w.style.borderRadius='0';s.max=true;
+    setTimeout(()=>w.style.transition='',180);
+  } else {
+    w.style.transition='all .18s';Object.assign(w.style,s.orig);w.style.borderRadius='';s.max=false;
+    setTimeout(()=>w.style.transition='',180);
+  }
+}
+function closeWin(id){
+  const w=document.getElementById(id);if(!w)return;
+  w.style.transition='all .14s';w.style.transform='scale(.88)';w.style.opacity='0';
+  setTimeout(()=>{w.remove();delete wins[id];upDock();document.getElementById('apptitle').textContent='';},140);
+  if(cpuInt&&!Object.values(wins).some(x=>x.type==='taskman')){clearInterval(cpuInt);cpuInt=null;}
+}
+function upDock(){
+  const at=new Set(Object.values(wins).map(x=>x.type));
+  document.querySelectorAll('.di').forEach(el=>el.classList.toggle('run',at.has(el.id.replace('di-',''))));
+}
+function makeDrag(win,handle){
+  let ox,oy,on=false;
+  handle.addEventListener('mousedown',e=>{if(e.target.classList.contains('wb'))return;on=true;ox=e.clientX-win.offsetLeft;oy=e.clientY-win.offsetTop;e.preventDefault();});
+  document.addEventListener('mousemove',e=>{if(!on)return;const D=document.getElementById('desktop');win.style.left=Math.max(-win.offsetWidth+80,Math.min(e.clientX-ox,D.clientWidth-80))+'px';win.style.top=Math.max(28,Math.min(e.clientY-oy,D.clientHeight-80))+'px';});
+  document.addEventListener('mouseup',()=>on=false);
+}
+function makeResize(win,handle){
+  let on=false,sx,sy,sw,sh;
+  handle.addEventListener('mousedown',e=>{on=true;sx=e.clientX;sy=e.clientY;sw=win.offsetWidth;sh=win.offsetHeight;e.preventDefault();});
+  document.addEventListener('mousemove',e=>{if(!on)return;win.style.width=Math.max(280,sw+e.clientX-sx)+'px';win.style.height=Math.max(200,sh+e.clientY-sy)+'px';});
+  document.addEventListener('mouseup',()=>on=false);
+}
+
+// APP BUILDER
+function buildApp(type,id,container){
+  const fn={browser:buildBrowser,files:buildFiles,terminal:buildTerminal,notepad:buildNotepad,
+    calculator:buildCalc,calendar:buildCalendar,clock:buildClock,notes:buildNotes,
+    imageviewer:buildImageViewer,music:buildMusic,taskman:buildTaskMan,
+    settings:buildSettingsApp,store:buildStoreApp,about:buildAbout}[type];
+  if(fn)fn(id,container);
+  else container.innerHTML=`<div style="padding:20px;color:#666">App: ${type}</div>`;
+}
+
+// BROWSER
+const bH={},bI={},bTabs={};
+const bNT=`<html><head><style>*{margin:0;padding:0}body{font-family:Ubuntu,sans-serif;background:linear-gradient(155deg,#1c1c24,#080810);color:#fff;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}h1{font-size:28px;font-weight:300;letter-spacing:3px}h1 b{color:#d70751;font-weight:700}p{opacity:.35;font-size:12px}input{padding:10px 20px;width:320px;border-radius:22px;border:1px solid rgba(215,7,81,.4);background:rgba(255,255,255,.06);color:#fff;font-size:13px;outline:none}input:focus{border-color:#d70751}.lk{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.l{padding:5px 14px;background:rgba(215,7,81,.1);border:1px solid rgba(215,7,81,.28);border-radius:16px;color:#f08;font-size:11px;cursor:pointer;transition:background .1s}.l:hover{background:rgba(215,7,81,.25)}</style></head><body><h1>Nova<b>OS</b></h1><p>New Tab</p><input id="q" placeholder="Search or enter URL..." onkeydown="if(event.key==='Enter'){var v=this.value.trim();if(!v)return;if(!/^https?:\\/\\//i.test(v))v=v.includes('.')?'https://'+v:'https://www.google.com/search?q='+encodeURIComponent(v);window.parent.postMessage({type:'nav',url:v},'*')}"/><div class="lk"><div class="l" onclick="window.parent.postMessage({type:'nav',url:'https://google.com'},'*')">🔍 Google</div><div class="l" onclick="window.parent.postMessage({type:'nav',url:'https://wikipedia.org'},'*')">📖 Wikipedia</div><div class="l" onclick="window.parent.postMessage({type:'nav',url:'https://github.com'},'*')">💻 GitHub</div><div class="l" onclick="window.parent.postMessage({type:'nav',url:'https://youtube.com'},'*')">▶ YouTube</div><div class="l" onclick="window.parent.postMessage({type:'nav',url:'https://reddit.com'},'*')">🟠 Reddit</div><div class="l" onclick="window.parent.postMessage({type:'nav',url:'https://dropbox.com'},'*')">📦 Dropbox</div></div></body></html>`;
+
+function buildBrowser(id,c){
+const wrap=document.createElement(‘div’);wrap.className=‘brow’;
+const tabbar=document.createElement(‘div’);tabbar.className=‘btabs’;tabbar.id=‘btabs_’+id;
+const newBtn=document.createElement(‘div’);newBtn.className=‘btabnew’;newBtn.textContent=’+’;newBtn.onclick=()=>bNewTab(id);tabbar.appendChild(newBtn);
+const bar=document.createElement(‘div’);bar.className=‘bbar’;
+bar.innerHTML=`<button class="nbtn" id="bbk_${id}">&#9664;</button><button class="nbtn" id="bfw_${id}">&#9654;</button><button class="nbtn" id="brl_${id}">&#8635;</button><button class="nbtn" id="bhm_${id}">&#127968;</button><input class="urlbar" id="url_${id}" placeholder="Search or enter address..."/><button class="nbtn" id="bgo_${id}">&#8594;</button><button class="nbtn" id="bxt_${id}" style="font-size:11px;width:auto;padding:0 6px" title="Open in new tab">&#8599;</button>`;
+const bwrap=document.createElement(‘div’);bwrap.style.cssText=‘flex:1;display:flex;flex-direction:column;position:relative;’;
+const fr=document.createElement(‘iframe’);fr.className=‘bframe’;fr.id=‘frame_’+id;fr.allow=‘fullscreen’;fr.style.flex=‘1’;
+const errDiv=document.createElement(‘div’);errDiv.id=‘berr_’+id;errDiv.style.display=‘none’;
+const stat=document.createElement(‘div’);stat.className=‘bstat’;stat.id=‘bst_’+id;stat.textContent=‘Ready’;
+bwrap.appendChild(fr);bwrap.appendChild(errDiv);
+wrap.appendChild(tabbar);wrap.appendChild(bar);wrap.appendChild(bwrap);wrap.appendChild(stat);c.appendChild(wrap);
+document.getElementById(‘bbk_’+id).onclick=()=>navB(id,‘back’);
+document.getElementById(‘bfw_’+id).onclick=()=>navB(id,‘fwd’);
+document.getElementById(‘brl_’+id).onclick=()=>navB(id,‘reload’);
+document.getElementById(‘bhm_’+id).onclick=()=>navB(id,‘home’);
+document.getElementById(‘bgo_’+id).onclick=()=>navB(id,‘go’);
+document.getElementById(‘bxt_’+id).onclick=()=>{const u=document.getElementById(‘url_’+id).value;if(u&&!u.startsWith(‘nova://’))window.open(u,’*blank’);};
+document.getElementById(’url*’+id).onkeydown=e=>{if(e.key===‘Enter’)navB(id,‘go’);};
+bH[id]=[];bI[id]=-1;bTabs[id]=[{title:‘New Tab’,url:‘nova://newtab’}];
+renderBTabs(id);navB(id,‘home’);
+}
+function bNewTab(id){bTabs[id].push({title:‘New Tab’,url:‘nova://newtab’});bI[id]=bTabs[id].length-1;renderBTabs(id);navB(id,‘home’);}
+function bCloseTab(id,ti,e){e.stopPropagation();if(bTabs[id].length===1){const wid=Object.keys(wins).find(k=>wins[k]?.type===‘browser’);if(wid)closeWin(wid);return;}bTabs[id].splice(ti,1);if(bI[id]>=bTabs[id].length)bI[id]=bTabs[id].length-1;renderBTabs(id);navB(id,‘home’);}
+function bSwitchTab(id,ti){bI[id]=ti;renderBTabs(id);const t=bTabs[id][ti];const ui=document.getElementById(‘url_’+id);if(ui)ui.value=t.url;if(t.url===‘nova://newtab’)navB(id,‘home’);else{const fr=document.getElementById(‘frame_’+id);if(fr)fr.src=t.url;}}
+function renderBTabs(id){const bar=document.getElementById(‘btabs_’+id);if(!bar)return;const nb=bar.querySelector(’.btabnew’);bar.innerHTML=’’;bTabs[id].forEach((t,i)=>{const tab=document.createElement(‘div’);tab.className=‘btab’+(i===bI[id]?’ act’:’’);const lbl=document.createElement(‘span’);lbl.style.cssText=‘overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:90px’;lbl.textContent=t.title;const cl=document.createElement(‘span’);cl.className=‘btabx’;cl.textContent=‘×’;cl.onclick=e=>bCloseTab(id,i,e);tab.onclick=()=>bSwitchTab(id,i);tab.appendChild(lbl);tab.appendChild(cl);bar.appendChild(tab);});bar.appendChild(nb);}
+function navB(id,act){
+const fr=document.getElementById(‘frame_’+id),ui=document.getElementById(‘url_’+id),st=document.getElementById(‘bst_’+id),errDiv=document.getElementById(‘berr_’+id);
+if(!fr||!ui)return;
+if(!bH[id])bH[id]=[];
+let url=ui.value.trim();
+if(act===‘home’||url===‘nova://newtab’){fr.srcdoc=bNT;fr.style.display=’’;if(errDiv)errDiv.style.display=‘none’;ui.value=‘nova://newtab’;if(st)st.textContent=‘New Tab’;if(bTabs[id]&&bI[id]>=0)bTabs[id][bI[id]]={title:‘New Tab’,url:‘nova://newtab’};renderBTabs(id);return;}
+if(act===‘back’){if(bH[id].length>1){bH[id].pop();url=bH[id][bH[id].length-1];}else return;}
+else if(act===‘reload’){fr.src=fr.src;return;}
+else if(act===‘fwd’){return;}
+else{if(!/^https?:///i.test(url)&&!url.startsWith(‘nova://’)){url=url.includes(’.’)?‘https://’+url:‘https://www.google.com/search?q=’+encodeURIComponent(url);}bH[id].push(url);}
+ui.value=url;fr.style.display=’’;if(errDiv)errDiv.style.display=‘none’;if(st)st.textContent=‘Loading…’;
+fr.src=url;
+const tid=setTimeout(()=>{try{const d=fr.contentDocument;if(d&&(!d.body||!d.body.innerHTML.trim()))showBErr(id,url);}catch(ex){if(st)st.textContent=url;}},5000);
+fr.onload=()=>{clearTimeout(tid);try{const d=fr.contentDocument;if(d&&(!d.body||!d.body.innerHTML.trim()))showBErr(id,url);else if(st)st.textContent=url;}catch(ex){if(st)st.textContent=url;}if(bTabs[id]&&bI[id]>=0)bTabs[id][bI[id]]={title:url.replace(/^https?:///,’’).slice(0,22),url};renderBTabs(id);};
+fr.onerror=()=>showBErr(id,url);
+}
+function showBErr(id,url){
+const fr=document.getElementById(‘frame_’+id),errDiv=document.getElementById(‘berr_’+id),st=document.getElementById(‘bst_’+id);
+if(fr)fr.style.display=‘none’;
+if(errDiv){errDiv.style.cssText=‘display:flex;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:#f6f5f4;text-align:center;padding:30px;’;
+errDiv.innerHTML=`<div style="font-size:40px">🔒</div><div style="font-size:14px;font-weight:500;color:#333">Can't display this page here</div><div style="font-size:11px;color:#666;max-width:260px">This site blocks embedding. Open in your real browser.</div><button onclick="window.open('${url}','_blank')" style="padding:7px 18px;background:#d70751;color:#fff;border:none;border-radius:14px;cursor:pointer;font-size:12px">Open in Real Browser ↗</button>`;}
+if(st)st.textContent=‘Blocked’;
+}
+window.addEventListener(‘message’,e=>{if(e.data?.type===‘nav’){const wid=Object.keys(wins).find(k=>wins[k]?.type===‘browser’);if(wid){const ui=document.getElementById(‘url_’+wid);if(ui){ui.value=e.data.url;navB(wid,‘go’);}}}});
+
+// TERMINAL
+const fsT={’/’:[‘home’,‘usr’,‘etc’,‘var’,‘bin’,‘tmp’,‘opt’],’/home’:[‘nova’],
+‘/home/nova’:[‘Documents’,‘Downloads’,‘Desktop’,‘Pictures’,‘Music’,‘Videos’,’.bashrc’,’.profile’,’.bash_history’],
+‘/home/nova/Documents’:[‘notes.txt’,‘report.pdf’,‘todo.md’,‘resume.pdf’],
+‘/home/nova/Downloads’:[‘wine-8.0.2.deb’],’/home/nova/Desktop’:[],
+‘/home/nova/Pictures’:[‘wallpaper.png’],’/home/nova/Music’:[‘playlist.m3u’],’/home/nova/Videos’:[],
+‘/etc’:[‘hostname’,‘fstab’,‘os-release’,‘passwd’,‘hosts’],
+‘/usr’:[‘bin’,‘lib’,‘local’],’/bin’:[],’/var’:[‘log’,‘cache’],’/tmp’:[],’/opt’:[]};
+const fC={
+‘.bashrc’:’# ~/.bashrc - NovaOS\nexport PS1=”\u@\h:\w\$ “\nalias ls=“ls –color=auto”\nalias ll=“ls -la”\nalias la=“ls -la”\nalias ..=“cd ..”\nalias update=“sudo apt update && sudo apt upgrade”\nalias wine=“wine64”\nalias winecfg=“wine64 winecfg”\nalias cls=“clear”’,
+‘.profile’:’# ~/.profile\n[ -f “$HOME/.bashrc” ] && . “$HOME/.bashrc”\nexport EDITOR=nano\nexport BROWSER=nova-browser\nexport TERM=xterm-256color’,
+‘.bash_history’:‘ls\ncd Documents\ncat notes.txt\napt update\nwine64 –version\nneofetch\ngit status\npython3 –version\ngrep -r “TODO” .\nfind . -name “*.txt”’,
+‘notes.txt’:‘NovaOS Notes\n============\nOS: NovaOS 1.0 (Debian Nova 12)\nKernel: 6.5.0-nova-amd64\nDE: NovaDE 1.0 (GTK4)\nWine: 8.0.2\n\nTODO:\n[ ] sudo apt upgrade\n[ ] Configure Wine prefix\n[ ] Set up git’,
+‘todo.md’:’# Task List\n\n## System\n- [x] Install NovaOS\n- [x] Set up Wine64\n- [ ] Configure backups\n\n## Apps\n- [ ] Install VS Code via store\n- [ ] Install GIMP’,
+‘os-release’:‘PRETTY_NAME=“NovaOS 1.0 (Debian Nova 12)”\nNAME=“NovaOS”\nVERSION_ID=“1.0”\nID=nova\nID_LIKE=debian’,
+‘hostname’:‘nova-debian’,
+‘passwd’:‘root:x:0:0:root:/root:/bin/bash\nnova:x:1000:1000:Nova User,,,:/home/nova:/bin/bash’,
+‘hosts’:‘127.0.0.1\tlocalhost\n127.0.1.1\tnova-debian\n::1\tlocalhost ip6-localhost’,
+‘fstab’:’/dev/sda1  /       ext4  defaults  0  1\n/dev/sda2  /home   ext4  defaults  0  2’,
+‘playlist.m3u’:’#EXTM3U\n#EXTINF:243,Debian Groove\ndebian_groove.mp3\n#EXTINF:180,Nova Theme\nnova_theme.mp3’
+};
+const tS={};
+const aliases={ll:‘ls -la’,la:‘ls -la’,l:‘ls’,’..’:‘cd ..’,update:‘sudo apt update’,upgrade:‘sudo apt upgrade’,wine:‘wine64’,winecfg:‘wine64 winecfg’,cls:‘clear’,q:‘exit’};
+function normP(p){const pts=p.split(’/’).filter(Boolean);const s=[];for(const x of pts){if(x===’..’)s.pop();else if(x!==’.’)s.push(x);}return’/’+s.join(’/’);}
+
+const cmds={
+ls:(a,s)=>{const p=normP(a.find(x=>!x.startsWith(’-’))||(a[0]?.startsWith(’-’)?’’:a[0])||s.cwd||s.cwd);const e=fsT[p];if(!e)return{t:`ls: cannot access '${p}': No such file or directory`,c:‘terr’};if(a.includes(’-la’)||a.includes(’-l’))return{t:‘total ‘+(e.length*4)+’\n’+e.map(x=>{const isD=fsT[p+’/’+x]!==undefined;return`${isD?'drwxr-xr-x':'-rw-r--r--'} 1 nova nova ${isD?4096:Math.floor(Math.random()*9000+200)} Jan  1 12:00 ${x}`;}).join(’\n’)};return{t:e.length?e.join(’  ‘):’(empty)’};},
+pwd:(a,s)=>({t:s.cwd}),
+cd:(a,s)=>{if(!a[0]||a[0]===’~’){s.cwd=’/home/nova’;return{t:’’};}if(a[0]===’-’){const tmp=s.prev||s.cwd;s.prev=s.cwd;s.cwd=tmp;return{t:s.cwd};}const tg=normP(a[0].startsWith(’/’)?a[0]:s.cwd+’/’+a[0]);if(fsT[tg]!==undefined){s.prev=s.cwd;s.cwd=tg;return{t:’’};}return{t:`bash: cd: ${a[0]}: No such file or directory`,c:‘terr’};},
+cat:(a,s)=>{if(!a[0])return{t:‘cat: missing operand’,c:‘terr’};const res=a.filter(x=>!x.startsWith(’-’)).map(fn=>{const n=fn.replace(/.*//,’’);if(fC[n]!==undefined)return fC[n];if(fsT[normP(fn.startsWith(’/’)?fn:s.cwd+’/’+fn)]!==undefined)return`cat: ${fn}: Is a directory`;return`cat: ${fn}: No such file or directory`;});return{t:res.join(’\n’),c:res.some(r=>r.startsWith(‘cat:’))&&a.filter(x=>!x.startsWith(’-’)).length===1?‘terr’:’’};},
+echo:(a)=>({t:a.join(’ ‘).replace(/$USER/g,‘nova’).replace(/$HOME/g,’/home/nova’).replace(/$SHELL/g,’/bin/bash’)}),
+whoami:()=>({t:‘nova’}),id:()=>({t:‘uid=1000(nova) gid=1000(nova) groups=1000(nova),4(adm),27(sudo)’}),
+hostname:()=>({t:‘nova-debian’}),
+uname:(a)=>({t:a[0]===’-a’?‘Linux nova-debian 6.5.0-nova-amd64 #1 SMP x86_64 GNU/Linux’:a[0]===’-r’?‘6.5.0-nova-amd64’:‘Linux’}),
+lsb_release:(a)=>({t:‘NovaOS 1.0 (nova) - Debian Nova 12\nKernel: 6.5.0-nova-amd64’}),
+uptime:()=>({t:`${new Date().toLocaleTimeString()} up ${Math.floor(Math.random()*120+5)} min, 1 user, load average: ${(Math.random()*1.5).toFixed(2)}, ${(Math.random()).toFixed(2)}, ${(Math.random()*.5).toFixed(2)}`}),
+apt:(a)=>{if(!a[0])return{t:‘apt 2.6.1 - Usage: apt update|upgrade|install|remove|search|list’,c:‘twarn’};if(a[0]===‘update’)return{t:‘Hit:1 http://nova.debian.org/debian bookworm InRelease\nReading package lists… Done\n3 packages can be upgraded.’,c:‘tok’};if(a[0]===‘upgrade’)return{t:‘Reading package lists… Done\n0 upgraded, 0 newly installed.’,c:‘tok’};if(a[0]===‘install’)return{t:`Setting up ${a.slice(1).join(' ')||'<pkg>'}...\n[OK] Done.`,c:‘tok’};if(a[0]===‘remove’)return{t:`Removing ${a[1]||'<pkg>'}...\n[OK] Done.`,c:‘tok’};if(a[0]===‘list’)return{t:‘bash/bookworm 5.2.15-2 amd64 [installed]\nnova-desktop/bookworm 1.0 amd64 [installed]\nwine/bookworm 8.0.2 amd64 [installed]\ngit/bookworm 2.39.2 amd64 [installed]’};if(a[0]===‘search’)return{t:`${a[1]||'*'}/bookworm 1.0 amd64\n  Package matching '${a[1]||'*'}'`};return{t:`E: Invalid operation ${a[0]}`,c:‘terr’};},
+dpkg:(a)=>{if(a[0]===’-l’)return{t:‘ii  bash            5.2.15-2  amd64\nii  nova-desktop    1.0       amd64\nii  wine            8.0.2     amd64\nii  python3         3.11.2-1  amd64\nii  git             2.39.2-1  amd64’};return{t:‘dpkg: try dpkg -l’,c:‘terr’};},
+ps:(a)=>{if(a.includes(‘aux’))return{t:‘USER   PID %CPU %MEM COMMAND\nnova     1  0.0  0.1 /sbin/init\nnova   601  2.1  7.1 nova-desktop\nnova   703  4.5 15.6 nova-browser\nnova   801  0.0  0.2 bash\nnova   910  0.4  1.5 pipewire’};return{t:’  PID TTY    TIME CMD\n  801 pts/0 00:00:00 bash’};},
+kill:(a)=>({t:a[0]?`Killed process ${a[a.length-1]}.`:‘kill: usage: kill PID’,c:a[0]?‘tok’:‘terr’}),
+df:()=>({t:‘Filesystem   Size  Used Avail Use% Mounted on\n/dev/sda1     20G  7.1G   12G  38% /\n/dev/sda2     80G   42G   38G  53% /home’}),
+free:()=>({t:’              total   used   free  available\nMem:        2048000 843776 612352    1253376\nSwap:       1048576      0 1048576   1048576’}),
+lscpu:()=>({t:‘Architecture: x86_64\nCPU(s): 4\nModel name: Nova Virtual x86_64\nCPU MHz: 2400.000\nCache size: 4096 KB’}),
+lsblk:()=>({t:‘NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS\nsda      8:0    0  100G  0 disk\n├─sda1   8:1    0   20G  0 part /\n└─sda2   8:2    0   80G  0 part /home’}),
+mount:()=>({t:‘sysfs on /sys\nproc on /proc\n/dev/sda1 on / type ext4 (rw)\n/dev/sda2 on /home type ext4 (rw)’}),
+mkdir:(a,s)=>{if(!a[0])return{t:‘mkdir: missing operand’,c:‘terr’};a.filter(x=>!x.startsWith(’-’)).forEach(d=>{const p=normP(d.startsWith(’/’)?d:s.cwd+’/’+d);if(!fsT[p]){fsT[p]=[];(fsT[s.cwd]=fsT[s.cwd]||[]).push(d.split(’/’).pop());}});return{t:’’};},
+rm:(a,s)=>{if(!a[0])return{t:‘rm: missing operand’,c:‘terr’};const errs=[];a.filter(x=>!x.startsWith(’-’)).forEach(fn=>{const i=(fsT[s.cwd]||[]).indexOf(fn);if(i===-1)errs.push(`rm: cannot remove '${fn}': No such file`);else fsT[s.cwd].splice(i,1);});return errs.length?{t:errs.join(’\n’),c:‘terr’}:{t:’’};},
+touch:(a,s)=>{if(!a[0])return{t:‘touch: missing operand’,c:‘terr’};a.filter(x=>!x.startsWith(’-’)).forEach(fn=>{if(!(fsT[s.cwd]||[]).includes(fn)){(fsT[s.cwd]=fsT[s.cwd]||[]).push(fn);fC[fn]=’’;}});return{t:’’};},
+cp:(a,s)=>{if(a.length<2)return{t:‘cp: missing destination’,c:‘terr’};const src=a[0],dst=a[a.length-1];if(fC[src]!==undefined)fC[dst]=fC[src];(fsT[s.cwd]=fsT[s.cwd]||[]).push(dst);return{t:’’};},
+mv:(a,s)=>{if(a.length<2)return{t:‘mv: missing destination’,c:‘terr’};const src=a[0],dst=a[a.length-1];if(fC[src]!==undefined){fC[dst]=fC[src];delete fC[src];}const i=(fsT[s.cwd]||[]).indexOf(src);if(i!==-1){fsT[s.cwd].splice(i,1);fsT[s.cwd].push(dst);}return{t:’’};},
+grep:(a,s)=>{if(a.length<2)return{t:‘Usage: grep [OPTIONS] PATTERN FILE’,c:‘terr’};const flags=a.filter(x=>x.startsWith(’-’));const na=a.filter(x=>!x.startsWith(’-’));const pat=na[0],file=na[1];const ci=flags.includes(’-i’);const re=new RegExp(pat,ci?‘gi’:‘g’);if(file){const n=file.replace(/.*//,’’);const c=fC[n];if(c===undefined)return{t:`grep: ${file}: No such file`,c:‘terr’};const lines=c.split(’\n’).filter(l=>re.test(l));return lines.length?{t:lines.join(’\n’),c:‘tok’}:{t:`(no match for '${pat}' in ${file})`};}return{t:`grep: (searching for '${pat}')...`};},
+find:(a,s)=>{const start=a[0]&&!a[0].startsWith(’-’)?normP(a[0].startsWith(’/’)?a[0]:s.cwd+’/’+a[0]):s.cwd;const nIdx=a.indexOf(’-name’);const name=nIdx!==-1?a[nIdx+1]:null;const tIdx=a.indexOf(’-type’);const type=tIdx!==-1?a[tIdx+1]:null;const all=[];function walk(p){(fsT[p]||[]).forEach(n=>{const fp=p+(p===’/’?’’:’/’+n);const isD=fsT[fp]!==undefined;if((!type||(type===‘f’&&!isD)||(type===‘d’&&isD))&&(!name||fp.endsWith(name.replace(’*’,’’))))all.push(fp);if(isD)walk(fp);});}walk(start);return all.length?{t:all.join(’\n’),c:‘tok’}:{t:’(no results)’};},
+wc:(a,s)=>{const file=a.find(x=>!x.startsWith(’-’));if(!file)return{t:‘wc: missing FILE’,c:‘terr’};const n=file.replace(/.*//,’’);const c=fC[n]||’’;return{t:`${c.split('\n').length.toString().padStart(4)} ${c.trim().split(/\s+/).filter(Boolean).length.toString().padStart(4)} ${c.length.toString().padStart(6)} ${file}`};},
+sort:(a,s)=>{const file=a.find(x=>!x.startsWith(’-’));if(!file)return{t:‘sort: missing FILE’,c:‘terr’};const n=file.replace(/.*//,’’);const c=fC[n]||’’;const lines=c.split(’\n’).filter(Boolean);if(a.includes(’-r’))lines.reverse();else lines.sort();return{t:lines.join(’\n’)};},
+head:(a,s)=>{const nI=a.indexOf(’-n’);const cnt=nI!==-1?parseInt(a[nI+1])||10:10;const file=a.find(x=>!x.startsWith(’-’));if(!file)return{t:‘head: missing FILE’,c:‘terr’};const n=file.replace(/.*//,’’);const c=fC[n];if(c===undefined)return{t:`head: ${file}: No such file`,c:‘terr’};return{t:c.split(’\n’).slice(0,cnt).join(’\n’)};},
+tail:(a,s)=>{const nI=a.indexOf(’-n’);const cnt=nI!==-1?parseInt(a[nI+1])||10:10;const file=a.find(x=>!x.startsWith(’-’));if(!file)return{t:‘tail: missing FILE’,c:‘terr’};const n=file.replace(/.*//,’’);const c=fC[n];if(c===undefined)return{t:`tail: ${file}: No such file`,c:‘terr’};return{t:c.split(’\n’).slice(-cnt).join(’\n’)};},
+chmod:(a)=>a.length<2?{t:‘chmod: missing operand’,c:‘terr’}:{t:`mode of '${a[1]}' changed to 0${a[0]}`,c:‘tok’},
+tar:(a)=>{if(!a[0])return{t:‘Usage: tar [czxvf] [archive] [files]’,c:‘terr’};if(a[0].includes(‘c’))return{t:`Creating archive...\n[OK] Done.`,c:‘tok’};if(a[0].includes(‘x’))return{t:`Extracting...\n[OK] Done.`,c:‘tok’};return{t:‘tar: invalid option’,c:‘terr’};},
+zip:(a)=>a[0]?{t:`Adding files to ${a[0]}...\n[OK] Created.`,c:‘tok’}:{t:‘Usage: zip archive.zip files’,c:‘terr’},
+unzip:(a)=>a[0]?{t:`Extracting ${a[0]}...\n[OK] Done.`,c:‘tok’}:{t:‘Usage: unzip archive.zip’,c:‘terr’},
+ping:(a)=>{const h=a.find(x=>!x.startsWith(’-’))||‘localhost’;const c=parseInt(a[a.indexOf(’-c’)+1])||4;return{t:[`PING ${h}: 56 data bytes`,…Array.from({length:c},(*,i)=>`64 bytes from ${h}: icmp_seq=${i+1} ttl=64 time=${(Math.random()*30+5).toFixed(3)} ms`),`\n--- ${h}: ${c} packets, 0% loss`].join(’\n’),c:‘tok’};},
+curl:(a)=>{const u=a.find(x=>!x.startsWith(’-’));if(!u)return{t:‘curl: try curl –help’,c:‘terr’};return{t:`{"status":"ok","server":"nova/1.0","url":"${u}"}`,c:‘tok’};},
+wget:(a)=>{const u=a.find(x=>!x.startsWith(’-’));if(!u)return{t:‘wget: missing URL’,c:‘terr’};const fn=u.split(’/’).pop()||‘index.html’;return{t:`Connecting... 200 OK\nSaving to: '${fn}'\n[OK] Done.`,c:‘tok’};},
+ip:(a)=>{if(a[0]===‘addr’||a[0]===‘a’)return{t:‘2: eth0: <BROADCAST,MULTICAST,UP>\n    inet 192.168.1.42/24\n    inet6 fe80::1/64’};if(a[0]===‘route’||a[0]===‘r’)return{t:‘default via 192.168.1.1 dev eth0\n192.168.1.0/24 dev eth0’};return{t:‘Try: ip addr | ip route’,c:‘twarn’};},
+ssh:(a)=>({t:`ssh: connect to host ${a.find(x=>!x.startsWith('-'))||'<host>'}: Connection timed out\n(simulated terminal)`,c:‘twarn’}),
+git:(a)=>{if(!a[0])return{t:‘usage: git <command>’,c:‘twarn’};if(a[0]===‘status’)return{t:“On branch main\nYour branch is up to date.\n\nnothing to commit, working tree clean”,c:‘tok’};if(a[0]===‘log’)return{t:‘commit a3f1b2c (HEAD -> main)\nAuthor: Nova User [nova@novaos.local](mailto:nova@novaos.local)\nDate:   Mon Jan  1 12:00:00 2024\n\n    Initial commit’};if(a[0]===‘branch’)return{t:’* main\n  develop\n  feature/new-ui’};if(a[0]===‘add’)return{t:’’,c:‘tok’};if(a[0]===‘commit’)return{t:`[main a3f1b2c] ${a.includes('-m')?a[a.indexOf('-m')+1]||'Update':'Update'}\n 1 file changed`,c:‘tok’};if(a[0]===‘push’)return{t:‘Everything up-to-date’,c:‘tok’};if(a[0]===‘pull’)return{t:‘Already up to date.’,c:‘tok’};if(a[0]===‘clone’)return{t:`Cloning into '${(a[1]||'repo').split('/').pop()?.replace('.git','')}'...\nDone.`,c:‘tok’};if(a[0]===‘init’)return{t:‘Initialized empty Git repository’,c:‘tok’};if(a[0]===‘diff’)return{t:’(working tree clean)’};return{t:`git: '${a[0]}' - ok`,c:‘tok’};},
+python3:(a)=>{if(!a[0])return{t:‘Python 3.11.2\nType “exit()” to quit.\n>>>\n(Interactive mode — try python3 script.py)’,c:‘tinfo’};if(a[0]===’–version’)return{t:‘Python 3.11.2’};const n=a[0].replace(/.*//,’’);const c=fC[n];if(c===undefined)return{t:`python3: can't open file '${a[0]}': No such file`,c:‘terr’};return{t:`Running ${a[0]}...\n[OK] Exited with code 0`,c:‘tok’};},
+node:(a)=>a[0]===’–version’?{t:‘v20.10.0’}:{t:a[0]?`Running ${a[0]}...\n[OK] Exited with code 0`:‘Welcome to Node.js v20\nType “.exit” to quit.’,c:‘tinfo’},
+npm:(a)=>({t:a[0]===‘install’||a[0]===‘i’?`added ${Math.floor(Math.random()*200+50)} packages in ${(Math.random()*5+1).toFixed(1)}s`:a[0]?`npm: ${a[0]} ok`:‘npm 10.2.3’,c:a[0]===‘install’||a[0]===‘i’?‘tok’:‘tinfo’}),
+gcc:(a)=>a[0]?{t:`Compiled: ${a[a.indexOf('-o')+1]||'a.out'}`,c:‘tok’}:{t:‘gcc: no input files’,c:‘terr’},
+make:(a)=>({t:a[0]?`make: '${a[0]}' up to date.`:‘make: Entering directory\ngcc -o program main.c\n[OK] Build succeeded.’,c:‘tok’}),
+env:()=>({t:‘SHELL=/bin/bash\nUSER=nova\nHOME=/home/nova\nPATH=/usr/local/bin:/usr/bin:/bin\nTERM=xterm-256color\nLANG=en_US.UTF-8\nEDITOR=nano\nDESKTOP_SESSION=nova-de’}),
+export:(a,s)=>{const m=a[0]?.match(/^(\w+)=(.*)$/);if(m){s.env=s.env||{};s.env[m[1]]=m[2];return{t:`export ${m[1]}=${m[2]}`,c:‘tok’};}return{t:’’};},
+which:(a)=>a[0]?{t:`/usr/bin/${a[0]}`,c:‘tok’}:{t:‘which: missing argument’,c:‘terr’},
+man:(a)=>a[0]?{t:`MAN PAGE: ${a[0]}\n\nNo manual entry available in this terminal.\nTry: ${a[0]} --help`,c:‘tinfo’}:{t:‘What manual page do you want?’,c:‘terr’},
+dmesg:()=>({t:’[  0.000000] Linux version 6.5.0-nova-amd64\n[  1.234567] nova-compositor: starting\n[  2.345678] nova-panel: loaded\n[  3.456789] NetworkManager: eth0 connected’,c:‘tinfo’}),
+crontab:(a)=>a[0]===’-l’?{t:’# Crontab for nova\n0 2 * * * /home/nova/backup.sh’}:{t:‘crontab: try crontab -l | crontab -e’,c:‘twarn’},
+passwd:()=>({t:‘Changing password for nova.\n(simulated)\npasswd: password updated successfully’,c:‘tok’}),
+sudo:(a)=>{if(!a[0])return{t:‘usage: sudo command’,c:‘terr’};if(a[0]===‘apt’)return cmds.apt(a.slice(1));return{t:`[sudo] Running: ${a.join(' ')}\n(simulated)`,c:‘twarn’};},
+nano:(a)=>{if(a[0]){openApp(‘notepad’);return{t:`Opening ${a[0]} in Text Editor...`,c:‘tok’};}return{t:‘nano: missing filename’,c:‘terr’};},
+vim:(a)=>{if(a[0]){openApp(‘notepad’);return{t:`Opening ${a[0]} in Text Editor...`,c:‘tok’};}return{t:‘VIM - Vi IMproved (redirected to Text Editor)’,c:‘tinfo’};},
+clear:()=>({clear:true}),reset:()=>({clear:true}),cls:()=>({clear:true}),
+date:()=>({t:new Date().toString()}),
+history:(a,s)=>({t:(s.hist||[]).map((c,i)=>`  ${String(i+1).padStart(4)}  ${c}`).join(’\n’)||’(no history)’}),
+alias:(a,s)=>{if(!a[0])return{t:Object.entries(aliases).map(([k,v])=>`alias ${k}='${v}'`).join(’\n’)};const raw=a.join(’ ‘);const m=raw.match(/^(\w[\w-]*)=(.+)$/);if(m){aliases[m[1]]=m[2].replace(/^[’”]|[’”]$/g,’’);return{t:’’};}if(aliases[a[0]])return{t:`alias ${a[0]}='${aliases[a[0]]}'`};return{t:`bash: alias: ${a[0]}: not found`,c:‘terr’};},
+unalias:(a)=>{if(!a[0])return{t:‘unalias: usage: unalias name’,c:‘terr’};if(aliases[a[0]]){delete aliases[a[0]];return{t:’’};}return{t:`bash: unalias: ${a[0]}: not found`,c:‘terr’};},
+source:(a)=>{const n=(a[0]||’’).replace(/.*//,’’);if(fC[n])return{t:`Sourcing ${a[0]}...\n[OK] Done.`,c:‘tok’};return{t:`source: ${a[0]||'?'}: No such file`,c:‘terr’};},
+exit:()=>({t:‘Use the ✕ button to close.’,c:‘twarn’}),
+help:()=>({t:`NovaOS Terminal — bash 5.2.15\n${'─'.repeat(48)}\nFile:       ls [-la], cd, pwd, cat, touch, mkdir, rm, cp, mv, find, grep\nText:       wc, sort, head, tail, diff\nSystem:     whoami, id, hostname, uname, uptime, ps [aux], kill, lscpu\nDisks:      df, free, mount, lsblk\nPackages:   apt, dpkg\nNetwork:    ping, curl, wget, ip, ssh\nDev:        git, python3, node, npm, make, gcc, env, export, which, man\nArchive:    tar [czxvf], zip, unzip, chmod\nSystem:     dmesg, crontab, passwd, sudo\nWine:       wine64  (wine64 --help)\nStore:      store   (store --help)\nShell:      alias, unalias, source, history, clear, exit`,c:‘tinfo’}),
+neofetch:()=>({t:`\n    _   _                  ___  ____  \n   | \\ | | _____   ____ _  / _ \\/ ___| \n   |  \\| |/ _ \\ \\ / / _\` || | | \*__ \ \n   | |\  | (*) \ V / (*| || |*| |***) |\n   |*| \*|\***/ \*/ \**,*| \***/|**__/ \n\nnova@nova-debian\n${‘─’.repeat(24)}\nOS:      NovaOS 1.0 (Debian Nova 12)\nKernel:  6.5.0-nova-amd64\nUptime:  ${Math.floor(Math.random()*120+5)} mins\nShell:   bash 5.2.15\nDE:      NovaDE 1.0 (GTK4)\nWM:      NovaWM (Aero Glass)\nTheme:   Adwaita-Nova\nFont:    Ubuntu 11\nCPU:     Nova Virtual x86_64 (4) @ 2.4GHz\nMemory:  ${Math.floor(Math.random()*400+420)} MiB / 2048 MiB\nWine:    8.0.2 (64-bit)\nPkgs:    847 (dpkg)\n\n ████ ████ ████ ████ ████ ████ ████`}), wine64:(a)=>{if(!a[0])return{t:'wine64 — Windows Compatibility Layer 8.0.2\nUsage: wine64 <app.exe> | wine64 winecfg | wine64 --version | wine64 --help',c:'twine'};if(a[0]==='--version')return{t:'wine-8.0.2 (NovaOS Wine Compatibility Layer)',c:'twine'};if(a[0]==='winecfg')return{t:'wine64: Starting winecfg...\n[Wine Config 8.0.2]\nWindows Version: Win10 | DXVK: On | Audio: PipeWire\nConfiguration saved.',c:'twine'};if(a[0]==='regedit')return{t:'wine64: Starting regedit...\nHKEY_CURRENT_USER - Loaded\nHKEY_LOCAL_MACHINE - Loaded',c:'twine'};if(a[0]==='cmd')return{t:'wine64: Starting cmd.exe\nMicrosoft Windows [Version 10.0.19041.0]\n(Wine 8.0.2)\nC:\\users\\nova> _',c:'twine'};const exe=a[0];if(exe==='notepad.exe'||exe==='NOTEPAD.EXE'){openApp('notepad');return{t:'wine64: Redirected to Nova Text Editor.',c:'twine'};}if(exe==='calc.exe'){openApp('calculator');return{t:'wine64: Redirected to Nova Calculator.',c:'twine'};}if(!exe.match(/\.exe$/i))return{t:`wine64: ‘${exe}’: not a .exe file`,c:'terr'};return{t:`wine64: Executing ‘${exe}’…\nfsync: up and running.\nwine: ‘${exe}’ not found.\nHint: Place .exe in /home/nova/.wine/drive_c/\nExit code: 1`,c:'terr'};}, store:(a)=>{if(!a[0]){openApp('store');return{t:'Launching Nova Software Center...',c:'tok'};}if(a[0]==='--help'||a[0]==='-h')return{t:'nova-store CLI\n  store              Open GUI\n  store search <q>   Search\n  store install <n>  Install\n  store remove <n>   Remove\n  store list         Installed\n  store upgrade      Upgrade all',c:'tinfo'};if(a[0]==='search'){const q=a.slice(1).join(' ').toLowerCase();if(!q)return{t:'store search: missing term',c:'terr'};const r=pkgs.filter(p=>p.n.includes(q)||p.d.toLowerCase().includes(q));return r.length?{t:r.map(p=>`${p.inst?’[+]’:’[ ]’} ${p.n.padEnd(16)} ${p.v.padEnd(10)} ${p.cat}\n    ${p.d}`).join('\n')}:{t:`No results for ‘${q}’`,c:'twarn'};}if(a[0]==='install'){const p=pkgs.find(x=>x.n.toLowerCase()===a[1]?.toLowerCase());if(!p)return{t:`E: Unable to locate ‘${a[1]}’`,c:'terr'};if(p.inst)return{t:`${p.n} already installed.`,c:'twarn'};p.inst=true;updateInstalledApps();return{t:`[OK] ${p.n} ${p.v} installed.`,c:'tok'};}if(a[0]==='remove'){const p=pkgs.find(x=>x.n.toLowerCase()===a[1]?.toLowerCase());if(!p||!p.inst)return{t:`${a[1]||’?’} not installed.`,c:'twarn'};p.inst=false;updateInstalledApps();return{t:`[OK] ${p.n} removed.`,c:'tok'};}if(a[0]==='list'){const ins=pkgs.filter(p=>p.inst);return ins.length?{t:'Installed:\n'+ins.map(p=>`  + ${p.n.padEnd(16)} ${p.v}`).join(’\n’)}:{t:‘No packages installed via Nova Store.’,c:‘twarn’};}if(a[0]===‘upgrade’)return{t:‘All packages up-to-date.’,c:‘tok’};return{t:‘Unknown store command.’,c:‘terr’};}
+};
+
+function buildTerminal(id,c){
+c.innerHTML=`<div class="term" id="term_${id}"><div class="tout" id="tout_${id}">
+<div class="tl tok">NovaOS Terminal — bash 5.2.15(1)-release</div>
+<div class="tl twarn">Debian GNU/Linux 12 (Nova) · Kernel 6.5.0-nova-amd64</div>
+<div class="tl tinfo">Type <span class="twine">help</span> for all commands · <span class="twine">Tab</span> autocomplete · <span class="twine">Ctrl+L</span> clear</div>
+<div class="tl"> </div>
+
+  </div>
+  <div class="tinrow">
+    <span class="tpre"><span class="tu">nova</span><span class="ta">@</span><span class="th">debian</span><span class="ta">:</span><span class="tp" id="tpath_${id}">~</span><span class="ta">$</span> </span>
+    <input id="tfield_${id}" class="tfield" type="text" autocomplete="off" spellcheck="false"/>
+  </div></div>`;
+  c.querySelector('.term').onclick=()=>document.getElementById('tfield_'+id).focus();
+  initTerm(id);
+}
+function initTerm(id){
+  tS[id]={cwd:'/home/nova',hist:[],hi:-1,env:{}};
+  const inp=document.getElementById('tfield_'+id);if(!inp)return;
+  setTimeout(()=>inp.focus(),40);
+  inp.addEventListener('keydown',e=>{
+    const s=tS[id];
+    if(e.key==='Enter'){
+      const raw=inp.value;inp.value='';if(!raw.trim())return;
+      s.hist.push(raw.trim());s.hi=s.hist.length;
+      addTL(id,'',prH(s)+esc(raw));
+      // basic pipe support
+      if(raw.includes('|')){
+        let out='';
+        raw.split('|').map(x=>x.trim()).forEach((p,i)=>{const[cmd,...args]=p.split(/\s+/);const fn=cmds[cmd];if(fn){const r=fn(i===0?args:[out,...args],s);out=r?.t||'';}});
+        out.split('\n').forEach(l=>{const d=document.createElement('div');d.className='tl';d.textContent=l||' ';const o=document.getElementById('tout_'+id);if(o){o.appendChild(d);o.scrollTop=o.scrollHeight;}});
+        updTP(id);return;
+      }
+      let parts=raw.trim().split(/\s+/);
+      if(aliases[parts[0]]){const exp=aliases[parts[0]].split(/\s+/);parts=[...exp,...parts.slice(1)];}
+      const[cmd,...args]=parts;const fn=cmds[cmd];
+      if(fn){const r=fn(args,s);if(r){if(r.clear)document.getElementById('tout_'+id).innerHTML='';else if(r.t!==undefined)r.t.split('\n').forEach(l=>{const d=document.createElement('div');d.className='tl '+(r.c||'');d.textContent=l||' ';const o=document.getElementById('tout_'+id);if(o){o.appendChild(d);o.scrollTop=o.scrollHeight;}});}}
+      else if(cmd){const d=document.createElement('div');d.className='tl terr';d.textContent=`bash: ${cmd}: command not found`;const o=document.getElementById('tout_'+id);if(o){o.appendChild(d);o.scrollTop=o.scrollHeight;}}
+      updTP(id);
+    }else if(e.key==='ArrowUp'){if(s.hi>0){s.hi--;inp.value=s.hist[s.hi]||'';}e.preventDefault();}
+    else if(e.key==='ArrowDown'){if(s.hi<s.hist.length-1){s.hi++;inp.value=s.hist[s.hi]||'';}else{s.hi=s.hist.length;inp.value='';}e.preventDefault();}
+    else if(e.key==='Tab'){const words=inp.value.split(/\s+/);const last=words[words.length-1];if(words.length===1){const m=Object.keys(cmds).filter(c=>c.startsWith(last));if(m.length===1)inp.value=m[0]+' ';}else{const items=fsT[tS[id]?.cwd]||[];const m=items.filter(x=>x.startsWith(last));if(m.length===1){words[words.length-1]=m[0];inp.value=words.join(' ')+' ';}}e.preventDefault();}
+    else if(e.ctrlKey&&e.key==='c'){addTL(id,'terr','^C');inp.value='';e.preventDefault();}
+    else if(e.ctrlKey&&e.key==='l'){document.getElementById('tout_'+id).innerHTML='';e.preventDefault();}
+    else if(e.ctrlKey&&e.key==='u'){inp.value='';e.preventDefault();}
+    else if(e.ctrlKey&&e.key==='a'){inp.setSelectionRange(0,inp.value.length);e.preventDefault();}
+  });
+}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function prH(s){const p=s.cwd.replace('/home/nova','~');return `<span class="tu">nova</span><span class="ta">@</span><span class="th">debian</span><span class="ta">:</span><span class="tp">${esc(p)}</span><span class="ta">$</span> `;}
+function addTL(id,cls,html){const o=document.getElementById('tout_'+id);if(!o)return;const d=document.createElement('div');d.className='tl '+(cls||'');d.innerHTML=html||' ';o.appendChild(d);o.scrollTop=o.scrollHeight;}
+function updTP(id){const el=document.getElementById('tpath_'+id);if(el&&tS[id])el.textContent=tS[id].cwd.replace('/home/nova','~');}
+
+// FILE MANAGER
+const fmH={},fmHi={},fmView={},fmSel={};
+function buildFiles(id,c){
+c.innerHTML=`<div class="fm">
+<div class="fmhdr">
+<button class="fmhb" id="fmbk_${id}" title="Back">◀</button>
+<button class="fmhb" id="fmup_${id}" title="Up">▲</button>
+<button class="fmhb" id="fmfw_${id}" title="Fwd">▶</button>
+<div class="fmbread" id="fmbread_${id}"></div>
+<button class="fmhb" id="fmnf_${id}" title="New Folder">📁</button>
+<button class="fmhb" id="fmvt_${id}" title="Toggle view">≡</button>
+<button class="fmhb" onclick="showN('Files','Refreshed.','📁')">↻</button>
+</div>
+<div class="fmbody">
+<div class="fmsb">
+<div class="fmsbs">Places</div>
+<div class="fmsi" id="fsi-h-${id}">🏠 Home</div>
+<div class="fmsi" id="fsi-d-${id}">📄 Documents</div>
+<div class="fmsi" id="fsi-dl-${id}">⬇ Downloads</div>
+<div class="fmsi" id="fsi-dt-${id}">💻 Desktop</div>
+<div class="fmsi" id="fsi-p-${id}">📷 Pictures</div>
+<div class="fmsi" id="fsi-m-${id}">🎵 Music</div>
+<div class="fmsi" id="fsi-v-${id}">🎬 Videos</div>
+<div class="fmsbs">System</div>
+<div class="fmsi" id="fsi-fs-${id}">💻 File System</div>
+<div class="fmsi" id="fsi-tr-${id}">🗑 Trash</div>
+</div>
+<div class="fmfiles grid" id="fmfiles_${id}"></div>
+</div>
+<div class="fmfoot">
+<span id="fmfoot_${id}">0 items</span>
+<span id="fmsel_${id}" style="color:#d70751"></span>
+</div>
+
+  </div>`;
+  document.getElementById('fmbk_'+id).onclick=()=>fmNav(id,'back');
+  document.getElementById('fmup_'+id).onclick=()=>fmNav(id,'up');
+  document.getElementById('fmfw_'+id).onclick=()=>fmNav(id,'fwd');
+  document.getElementById('fmnf_'+id).onclick=()=>fmNewFolder(id);
+  document.getElementById('fmvt_'+id).onclick=()=>fmToggleView(id);
+  const nav={h:'/home/nova',d:'/home/nova/Documents',dl:'/home/nova/Downloads',dt:'/home/nova/Desktop',p:'/home/nova/Pictures',m:'/home/nova/Music',v:'/home/nova/Videos'};
+  Object.entries(nav).forEach(([k,p])=>document.getElementById(`fsi-${k}-${id}`).onclick=()=>fmOpen(id,p));
+  document.getElementById('fsi-fs-'+id).onclick=()=>fmOpen(id,'/');
+  document.getElementById('fsi-tr-'+id).onclick=()=>showN('Trash','Trash is empty.','🗑️');
+  fmView[id]='grid';
+  setTimeout(()=>fmOpen(id,'/home/nova'),0);
+}
+function fmOpen(id,path){
+  if(fsT[path]===undefined)return;
+  if(!fmH[id])fmH[id]=[];
+  if(fmH[id][fmH[id].length-1]!==path)fmH[id].push(path);
+  fmHi[id]=fmH[id].length-1;fmSel[id]=null;
+  fmRender(id,path);
+  const bc=document.getElementById('fmbread_'+id);
+  if(bc){const pts=path.split('/').filter(Boolean);bc.innerHTML=`<span class="fbp" data-path="/">/</span>`+pts.map((p,i)=>{const pp='/'+pts.slice(0,i+1).join('/');return `<span class="fbsep">&#8250;</span><span class="fbp${i===pts.length-1?' cur':''}" data-path="${pp}">${p}</span>`;}).join('');bc.querySelectorAll('.fbp').forEach(el=>el.onclick=()=>fmOpen(id,el.dataset.path));}
+  const map={'/home/nova':'h','/home/nova/Documents':'d','/home/nova/Downloads':'dl','/home/nova/Desktop':'dt','/home/nova/Pictures':'p','/home/nova/Music':'m','/home/nova/Videos':'v'};
+  document.querySelectorAll(`[id^="fsi-"][id$="-${id}"]`).forEach(el=>el.classList.remove('act'));
+  const k=map[path];if(k)document.getElementById(`fsi-${k}-${id}`)?.classList.add('act');
+}
+function fmRender(id,path){
+  const c=document.getElementById('fmfiles_'+id);if(!c)return;
+  const e=fsT[path]||[];
+  document.getElementById('fmfoot_'+id).textContent=`${e.length} item${e.length!==1?'s':''}`;
+  c.innerHTML='';
+  e.forEach(n=>{
+    const isD=fsT[path+'/'+n]!==undefined;
+    const div=document.createElement('div');div.className='fmf';
+    const ext=n.split('.').pop().toLowerCase();
+    const ic=isD?'📁':({txt:'📄',md:'📄',pdf:'📕',png:'🖼️',jpg:'🖼️',mp3:'🎵',mp4:'🎬',zip:'🗜️',tar:'🗜️',gz:'🗜️',deb:'📦',iso:'💿',sh:'🔧',py:'🐍',js:'📜',html:'🌐',json:'📋',log:'📋',m3u:'🎵'}[ext]||'📄');
+    if(fmView[id]==='grid'){div.innerHTML=`<div class="ffi">${ic}</div><div class="ffn">${n}</div>`;}
+    else{div.innerHTML=`<div class="ffi">${ic}</div><div class="ffn">${n}</div><div class="ffm">${isD?'—':Math.floor(Math.random()*900+1)+' KB'}</div>`;}
+    div.onclick=()=>{fmSel[id]=n;document.querySelectorAll(`#fmfiles_${id} .fmf`).forEach(f=>f.classList.remove('sel'));div.classList.add('sel');const sel=document.getElementById('fmsel_'+id);if(sel)sel.textContent=`"${n}" selected`;};
+    div.ondblclick=()=>{if(isD)fmOpen(id,path+'/'+n);else if(n.match(/\.(png|jpg|jpeg)$/i))openApp('imageviewer');else if(n.match(/\.(mp3|m3u|flac)$/i))openApp('music');else{openApp('notepad');}};
+    div.oncontextmenu=e=>{e.preventDefault();e.stopPropagation();fmCtx(e,id,path,n,isD);};
+    c.appendChild(div);
+  });
+}
+function fmCtx(e,id,path,n,isD){
+  rmCtx();const m=document.createElement('div');m.className='ctxm';m.id='ctxm';
+  [['📂','Open',()=>{if(isD)fmOpen(id,path+'/'+n);else openApp('notepad');}],null,
+   ['📋','Copy',()=>showN('Files',`Copied "${n}"  to clipboard`,'📋')],
+   ['✂️','Cut',()=>showN('Files',`Cut "${n}"`,'✂️')],null,
+   ['✏️','Rename',()=>{const nv=prompt(`Rename "${n}" to:`,n);if(nv&&nv!==n){const i=(fsT[path]||[]).indexOf(n);if(i!==-1){fsT[path][i]=nv;if(fC[n]!==undefined){fC[nv]=fC[n];delete fC[n];}fmRender(id,path);showN('Files',`Renamed to "${nv}"`,'✏️');}}}],
+   ['🗑️','Delete',()=>{if(confirm(`Delete "${n}"?`)){const i=(fsT[path]||[]).indexOf(n);if(i!==-1)fsT[path].splice(i,1);fmRender(id,path);showN('Files',`Deleted "${n}"`,'🗑️');}},true],null,
+   ['ℹ️','Properties',()=>showN('Properties',`${n} · ${isD?'Folder':'File'} · ${isD?(fsT[path+'/'+n]||[]).length+' items':Math.floor(Math.random()*900+1)+' KB'}`,'ℹ️')]
+  ].forEach(it=>{
+    if(!it){const s=document.createElement('div');s.className='cxs';m.appendChild(s);return;}
+    const d=document.createElement('div');d.className='cxi'+(it[2]===true?' danger':'');
+    d.innerHTML=`<span style="font-size:14px;width:18px;text-align:center">${it[0]}</span>${it[1]}`;
+    d.onclick=()=>{rmCtx();it[2]&&it[2]!==true&&it[2]();};m.appendChild(d);
+  });
+  m.style.left=Math.min(e.clientX,window.innerWidth-200)+'px';m.style.top=Math.min(e.clientY,window.innerHeight-240)+'px';
+  document.getElementById('desktop').appendChild(m);
+}
+function fmNewFolder(id){const path=fmH[id]?.[fmHi[id]]||'/home/nova';const nm=prompt('New folder name:','New Folder');if(!nm)return;const p=path+'/'+nm;if(!fsT[p]){fsT[p]=[];(fsT[path]=fsT[path]||[]).push(nm);fmRender(id,path);showN('Files',`Folder "${nm}" created`,'📁');}else showN('Files','Folder already exists','⚠️');}
+function fmToggleView(id){fmView[id]=fmView[id]==='grid'?'list':'grid';const c=document.getElementById('fmfiles_'+id);if(c){c.className='fmfiles '+(fmView[id]);const path=fmH[id]?.[fmHi[id]]||'/home/nova';fmRender(id,path);}}
+function fmNav(id,d){const his=fmH[id]||[];const ci=fmHi[id]||0;if(d==='back'&&ci>0){fmHi[id]=ci-1;fmRender(id,his[fmHi[id]]);}else if(d==='fwd'&&ci<his.length-1){fmHi[id]=ci+1;fmRender(id,his[fmHi[id]]);}else if(d==='up'){const cur=his[ci]||'/home/nova';const par=cur.split('/').slice(0,-1).join('/')||'/';fmOpen(id,par);}}
+
+# // NOTEPAD
+function buildNotepad(id,c){
+c.innerHTML=`<div class="np">
+<div class="nptb">
+<button class="npb" onclick="showN('Text Editor','File: New / Open / Save / Print','📝')">File</button>
+<button class="npb" id="npsel_${id}">Edit</button>
+<button class="npb">View</button>
+<span style="width:1px;background:#ddd;margin:0 4px;align-self:stretch;"></span>
+<button class="npb" id="npsave_${id}" style="background:var(--red);color:#fff;border-color:var(--red2)">💾 Save</button>
+</div>
+<textarea class="npta" id="npta_${id}" spellcheck="true" placeholder="Start typing...">Welcome to NovaOS Text Editor
+
+A full-featured text editor for Debian Nova 12.
+
+Keyboard shortcuts:
+Ctrl+S — Save
+Ctrl+A — Select all
+Ctrl+Z — Undo
+Ctrl+F — Find (browser native)
+</textarea>
+<div class="npst">
+<span id="npln_${id}">Ln 1, Col 1</span>
+<span id="npch_${id}">0 chars</span>
+<span id="npwc_${id}">0 words</span>
+<span>UTF-8</span><span>Unix (LF)</span>
+</div>
+
+  </div>`;
+  const ta=document.getElementById('npta_'+id);
+  ta.oninput=ta.onkeyup=ta.onclick=()=>npUpd(id);
+  ta.onkeydown=e=>{if(e.ctrlKey&&e.key==='s'){e.preventDefault();showN('Text Editor','Saved to ~/Documents/untitled.txt','💾');}};
+  document.getElementById('npsel_'+id).onclick=()=>ta.select();
+  document.getElementById('npsave_'+id).onclick=()=>showN('Text Editor','Saved!','💾');
+  npUpd(id);
+}
+function npUpd(id){const ta=document.getElementById('npta_'+id);if(!ta)return;const v=ta.value,pos=ta.selectionStart;const lines=v.substr(0,pos).split('\n');document.getElementById('npln_'+id).textContent=`Ln ${lines.length}, Col ${lines[lines.length-1].length+1}`;document.getElementById('npch_'+id).textContent=`${v.length} chars`;document.getElementById('npwc_'+id).textContent=`${v.trim().split(/\s+/).filter(Boolean).length} words`;}
+
+// CALCULATOR
+const calcS={};
+function buildCalc(id,c){
+c.innerHTML=`<div class="calc">
+<div class="calcdisplay">
+<div class="calcexpr" id="cexpr_${id}"></div>
+<div class="calcval" id="cval_${id}">0</div>
+</div>
+<div class="calcgrid" id="cgrid_${id}"></div>
+
+  </div>`;
+  const g=document.getElementById('cgrid_'+id);
+  [{l:'sin',c:'fn'},{l:'cos',c:'fn'},{l:'√',c:'fn'},{l:'x²',c:'fn'},
+   {l:'C',c:'clr'},{l:'±',c:'fn'},{l:'%',c:'fn'},{l:'÷',c:'op'},
+   {l:'7'},{l:'8'},{l:'9'},{l:'×',c:'op'},
+   {l:'4'},{l:'5'},{l:'6'},{l:'−',c:'op'},
+   {l:'1'},{l:'2'},{l:'3'},{l:'+',c:'op'},
+   {l:'0',c:'span2'},{l:'.'},{l:'=',c:'eq'}
+  ].forEach(b=>{const k=document.createElement('button');k.className='ck '+(b.c||'');if(b.c==='span2')k.style.gridColumn='span 2';k.textContent=b.l;if(['sin','cos','√','x²'].includes(b.l))k.onclick=()=>calcSci(id,b.l);else k.onclick=()=>calcPress(id,b.l);g.appendChild(k);});
+  calcS[id]={v:'0',expr:'',op:null,prev:null,newNum:true};
+}
+function calcPress(id,key){
+  const s=calcS[id];if(!s)return;
+  const upd=()=>{document.getElementById('cval_'+id).textContent=s.v;document.getElementById('cexpr_'+id).textContent=s.expr;};
+  if(key==='C'){Object.assign(s,{v:'0',expr:'',op:null,prev:null,newNum:true});}
+  else if(key==='±'){s.v=String(-parseFloat(s.v)||0);}
+  else if(key==='%'){s.v=String(parseFloat(s.v)/100);}
+  else if(['÷','×','−','+'].includes(key)){s.prev=parseFloat(s.v);s.op=key;s.expr=s.v+' '+key;s.newNum=true;}
+  else if(key==='='){
+    if(s.op&&s.prev!==null){
+      const a=s.prev,b=parseFloat(s.v);let r=a;
+      if(s.op==='÷')r=b!==0?a/b:NaN;else if(s.op==='×')r=a*b;else if(s.op==='−')r=a-b;else r=a+b;
+      s.expr=s.expr+' '+s.v+' =';s.v=isNaN(r)?'Error':String(parseFloat(r.toFixed(10)));s.op=null;s.prev=null;s.newNum=true;
+    }
+  } else if(key==='.'){if(s.newNum){s.v='0.';s.newNum=false;}else if(!s.v.includes('.'))s.v+='.';}
+  else{if(s.newNum){s.v=key;s.newNum=false;}else s.v=s.v==='0'?key:s.v.length<15?s.v+key:s.v;}
+  upd();
+}
+function calcSci(id,fn){const s=calcS[id];if(!s)return;const v=parseFloat(s.v);let r=v;if(fn==='sin')r=Math.sin(v*Math.PI/180);else if(fn==='cos')r=Math.cos(v*Math.PI/180);else if(fn==='√')r=Math.sqrt(v);else if(fn==='x²')r=v*v;s.v=String(parseFloat(r.toFixed(10)));s.expr=`${fn}(${v})`;s.newNum=true;document.getElementById('cval_'+id).textContent=s.v;document.getElementById('cexpr_'+id).textContent=s.expr;}
+
+// CALENDAR
+const calEvents={};
+function buildCalendar(id,c){
+const now=new Date();if(!calEvents._init){calEvents[`${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`]=‘Today’;calEvents[`${now.getFullYear()}-${now.getMonth()}-15`]=‘Team standup’;calEvents._init=true;}
+c.innerHTML=`<div class="cal"> <div class="calhdr"><button class="calhb" id="calp_${id}">&#8249;</button><div class="calmonthlbl" id="calm_${id}"></div><button class="calhb" id="caln_${id}">&#8250;</button><button class="calhb" style="margin-left:8px;font-size:10px;width:38px" onclick="calToday('${id}')">Today</button></div> <div class="caldays">${['Su','Mo','Tu','We','Th','Fr','Sa'].map(d=>`<div class="cald">${d}</div>`).join(’’)}</div>
+<div class="calgrid" id="calg_${id}" style="flex:1;display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#ddd;"></div>
+<div class="calfooter" id="calf_${id}">Click a day to add an event</div>
+
+  </div>`;
+  c._calD={y:now.getFullYear(),m:now.getMonth()};
+  document.getElementById('calp_'+id).onclick=()=>{c._calD.m--;if(c._calD.m<0){c._calD.m=11;c._calD.y--;}calRender(id,c._calD.y,c._calD.m);};
+  document.getElementById('caln_'+id).onclick=()=>{c._calD.m++;if(c._calD.m>11){c._calD.m=0;c._calD.y++;}calRender(id,c._calD.y,c._calD.m);};
+  calRender(id,now.getFullYear(),now.getMonth());
+}
+function calToday(id){const wc=document.getElementById('wc_'+id);const now=new Date();wc._calD={y:now.getFullYear(),m:now.getMonth()};calRender(id,now.getFullYear(),now.getMonth());}
+function calRender(id,y,m){
+  const ml=document.getElementById('calm_'+id);const grid=document.getElementById('calg_'+id);if(!ml||!grid)return;
+  ml.textContent=new Date(y,m,1).toLocaleDateString([],{month:'long',year:'numeric'});
+  grid.innerHTML='';
+  const first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();
+  const today=new Date();
+  for(let i=0;i<first;i++){const d=document.createElement('div');d.className='calday othermonth';d.style.minHeight='50px';d.style.padding='4px';d.style.background='#f0efed';const dn=new Date(y,m,-(first-1-i));d.innerHTML=`<div class="caldaynum" style="color:#ccc">${dn.getDate()}</div>`;grid.appendChild(d);}
+  for(let i=1;i<=days;i++){const d=document.createElement('div');d.className='calday';d.style.cssText='background:#f6f5f4;min-height:50px;padding:4px;cursor:pointer;';const key=`${y}-${m}-${i}`;const isToday=i===today.getDate()&&m===today.getMonth()&&y===today.getFullYear();if(isToday)d.style.background='#fff9f9';d.innerHTML=`<div class="caldaynum" style="${isToday?'background:var(--red);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;':''}">${i}</div>${calEvents[key]?`<div class="calevent">${calEvents[key]}</div>`:''}`;d.onclick=()=>{const ev=prompt(`Event on ${new Date(y,m,i).toDateString()}:`,calEvents[key]||'');if(ev!==null){if(ev)calEvents[key]=ev;else delete calEvents[key];calRender(id,y,m);const f=document.getElementById('calf_'+id);if(f)f.textContent=ev?`Added: ${ev}`:'Event removed';}};grid.appendChild(d);}
+  for(let i=1;i<=42-(first+days);i++){const d=document.createElement('div');d.style.cssText='background:#f0efed;min-height:50px;padding:4px;';d.innerHTML=`<div style="font-size:12px;font-weight:500;color:#ccc;width:20px;height:20px;display:flex;align-items:center;justify-content:center;">${i}</div>`;grid.appendChild(d);}
+}
+
+// CLOCK
+function buildClock(id,c){
+c.innerHTML=`<div class="clockapp">
+<div class="clocktabs">
+<div class="clocktab act" id="ctab0_${id}" onclick="clockTab('${id}',0)">Clock</div>
+<div class="clocktab" id="ctab1_${id}" onclick="clockTab('${id}',1)">Stopwatch</div>
+<div class="clocktab" id="ctab2_${id}" onclick="clockTab('${id}',2)">Timer</div>
+<div class="clocktab" id="ctab3_${id}" onclick="clockTab('${id}',3)">World</div>
+</div>
+<div class="clockbody" id="clkbody_${id}"></div>
+
+  </div>`;
+  c._ck={tab:0,sw:0,swRun:false,swInt:null,timer:0,timerSet:300,timerRun:false,timerInt:null,clkInt:null};
+  clockTab(id,0);
+}
+function clockTab(id,t){
+  const wc=document.getElementById('wc_'+id);if(!wc||!wc._ck)return;
+  [0,1,2,3].forEach(i=>{const el=document.getElementById(`ctab${i}_${id}`);if(el)el.classList.toggle('act',i===t);});
+  if(wc._ck.clkInt)clearInterval(wc._ck.clkInt);
+  if(wc._ck.swInt&&t!==1){}
+  wc._ck.tab=t;clkRender(id);
+}
+function clkRender(id){
+  const wc=document.getElementById('wc_'+id);if(!wc||!wc._ck)return;
+  const s=wc._ck,body=document.getElementById('clkbody_'+id);if(!body)return;
+  if(s.tab===0){
+    body.innerHTML=`<canvas id="clkcanv_${id}" width="140" height="140" style="border-radius:50%;background:rgba(255,255,255,.04)"></canvas><div class="clockdigital" id="clkdig_${id}"></div><div class="clocksub" id="clksub_${id}"></div>`;
+    function tick(){const now=new Date();const el=document.getElementById('clkdig_'+id),sub=document.getElementById('clksub_'+id),cv=document.getElementById('clkcanv_'+id);if(!el)return;el.textContent=now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});if(sub)sub.textContent=now.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});if(cv){const ctx=cv.getContext('2d'),cx=70,cy=70,r=66;ctx.clearRect(0,0,140,140);ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();for(let i=0;i<12;i++){const a=i*Math.PI/6-Math.PI/2,big=i%3===0;ctx.strokeStyle=big?'rgba(255,255,255,.5)':'rgba(255,255,255,.25)';ctx.lineWidth=big?2:1;ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*(r-(big?8:5)),cy+Math.sin(a)*(r-(big?8:5)));ctx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);ctx.stroke();}const h=now.getHours()%12,m=now.getMinutes(),sec=now.getSeconds();const ha=(h+m/60)*Math.PI/6-Math.PI/2,ma=(m+sec/60)*Math.PI*2/60-Math.PI/2,sa=sec*Math.PI*2/60-Math.PI/2;[{a:ha,l:42,w:3,c:'rgba(255,255,255,.9)'},{a:ma,l:58,w:2,c:'rgba(255,255,255,.8)'},{a:sa,l:62,w:1,c:'#d70751'}].forEach(({a,l,w,c})=>{ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*l,cy+Math.sin(a)*l);ctx.stroke();});ctx.fillStyle='#d70751';ctx.beginPath();ctx.arc(cx,cy,4,0,Math.PI*2);ctx.fill();}}
+    tick();if(s.clkInt)clearInterval(s.clkInt);s.clkInt=setInterval(tick,1000);
+  } else if(s.tab===1){
+    const fmt=ms=>{const t=ms/1000,m=Math.floor(t/60),sc=Math.floor(t%60),cs=Math.floor((ms%1000)/10);return `${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}.${String(cs).padStart(2,'0')}`;};
+    body.innerHTML=`<div class="swlabel" id="swlbl_${id}">${fmt(s.sw)}</div><div class="swbtns"><button class="swbtn ${s.swRun?'stop':'start'}" id="swstart_${id}">${s.swRun?'Stop':'Start'}</button><button class="swbtn reset" id="swreset_${id}">Reset</button></div>`;
+    document.getElementById('swstart_'+id).onclick=()=>{s.swRun=!s.swRun;if(s.swRun){const t0=Date.now()-s.sw;s.swInt=setInterval(()=>{s.sw=Date.now()-t0;const el=document.getElementById('swlbl_'+id);if(el)el.textContent=fmt(s.sw);},50);}else clearInterval(s.swInt);clkRender(id);};
+    document.getElementById('swreset_'+id).onclick=()=>{clearInterval(s.swInt);s.sw=0;s.swRun=false;clkRender(id);};
+  } else if(s.tab===2){
+    const fmt=sec=>`${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`;
+    body.innerHTML=`<div class="swlabel" id="tlbl_${id}">${fmt(s.timer||s.timerSet)}</div><div style="display:flex;gap:6px;margin-bottom:8px">${[60,300,600,1800].map(v=>`<button class="swbtn reset" style="font-size:10px;padding:5px 12px" onclick="setTimerVal('${id}',${v})">${v>=3600?v/3600+'h':v>=60?v/60+'m':v+'s'}</button>`).join('')}</div><div class="swbtns"><button class="swbtn ${s.timerRun?'stop':'start'}" id="tstart_${id}">${s.timerRun?'Pause':'Start'}</button><button class="swbtn reset" id="treset_${id}">Reset</button></div>`;
+    document.getElementById('tstart_'+id).onclick=()=>{s.timerRun=!s.timerRun;if(s.timerRun){if(!s.timer)s.timer=s.timerSet;s.timerInt=setInterval(()=>{if(s.timer>0){s.timer--;const el=document.getElementById('tlbl_'+id);if(el)el.textContent=fmt(s.timer);}else{clearInterval(s.timerInt);s.timerRun=false;showN('Timer','⏰ Time is up!','⏰');clkRender(id);}},1000);}else clearInterval(s.timerInt);clkRender(id);};
+    document.getElementById('treset_'+id).onclick=()=>{clearInterval(s.timerInt);s.timer=0;s.timerRun=false;clkRender(id);};
+  } else {
+    const zones=[['New York','America/New_York'],['London','Europe/London'],['Paris','Europe/Paris'],['Tokyo','Asia/Tokyo'],['Sydney','Australia/Sydney'],['Dubai','Asia/Dubai'],['Los Angeles','America/Los_Angeles'],['Beijing','Asia/Shanghai']];
+    body.innerHTML='<div style="width:100%;max-width:280px">'+zones.map(([city,tz])=>{try{const t=new Date().toLocaleTimeString('en',{timeZone:tz,hour:'2-digit',minute:'2-digit',hour12:false});const d=new Date().toLocaleDateString('en',{timeZone:tz,weekday:'short',month:'short',day:'numeric'});return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 4px;border-bottom:1px solid rgba(255,255,255,.06)"><div><div style="font-size:12px;color:#ddd">${city}</div><div style="font-size:10px;color:#555">${d}</div></div><div style="font-size:18px;font-family:'Ubuntu Mono',monospace;color:#fff">${t}</div></div>`;}catch{return '';}}).join('')+'</div>';
+  }
+}
+function setTimerVal(id,v){const wc=document.getElementById('wc_'+id);if(!wc||!wc._ck)return;const s=wc._ck;clearInterval(s.timerInt);s.timer=v;s.timerSet=v;s.timerRun=false;clkRender(id);}
+
+// NOTES
+let notesData=[{id:1,title:‘Welcome to Notes’,body:‘This is your first note!\n\nUse the + button to create new notes.\nClick any note in the sidebar to open it.\n\nYou can also type Ctrl+S to save.’,date:‘Just now’},{id:2,title:‘Shopping List’,body:’- Milk\n- Eggs\n- Bread\n- Coffee\n- Apples\n- Orange juice’,date:‘2h ago’},{id:3,title:‘NovaOS Tips’,body:’• Type “help” in Terminal for all commands\n• Right-click desktop for context menu\n• Super key opens Activities\n• Ctrl+Alt+T opens Terminal\n• Alt+F4 closes a window\n• Drag windows to screen edges to snap them’,date:‘Yesterday’},{id:4,title:‘Ideas’,body:’• Build something cool with NovaOS\n• Learn more Linux commands\n• Install apps from Software Center\n• Try the Calculator scientific functions\n• Check World Clocks in the Clock app’,date:‘2 days ago’}];
+let notesNext=5,notesActive=1;
+function buildNotes(id,c){
+const wrap=document.createElement(‘div’);wrap.className=‘notesapp’;
+const sb=document.createElement(‘div’);sb.className=‘notessb’;
+const sbtop=document.createElement(‘div’);sbtop.className=‘notessbtop’;
+sbtop.innerHTML=’<span class="notessbttl">📌 Notes</span>’;
+const nb=document.createElement(‘button’);nb.className=‘notesnewbtn’;nb.textContent=’+’;nb.title=‘New note’;
+nb.onclick=()=>{notesData.unshift({id:notesNext++,title:‘New Note’,body:’’,date:‘Just now’});notesActive=notesData[0].id;notesRender(id);};
+sbtop.appendChild(nb);sb.appendChild(sbtop);
+const nl=document.createElement(‘div’);nl.className=‘noteslist’;nl.id=‘noteslist_’+id;sb.appendChild(nl);
+const nc=document.createElement(‘div’);nc.className=‘notescont’;
+nc.innerHTML=`<div class="notestoolbar"><button class="ntb" onclick="notesDel('${id}')">&#128465; Delete</button><button class="ntb" onclick="showN('Notes','Exported to Downloads','&#128204;')">&#8599; Export</button><button class="ntb" id="notessave_${id}" style="background:var(--red);color:#fff;border-color:var(--red2)">&#128190; Save</button><span style="flex:1"></span><span id="notesdt_${id}" style="font-size:10px;color:#aaa"></span></div><input class="notestitle" id="notestitle_${id}" placeholder="Note title..."/><textarea class="notestextarea" id="notestxt_${id}" placeholder="Start writing..."></textarea>`;
+wrap.appendChild(sb);wrap.appendChild(nc);c.appendChild(wrap);
+document.getElementById(‘notestitle_’+id).oninput=()=>{const n=notesData.find(x=>x.id===notesActive);if(n){n.title=document.getElementById(‘notestitle_’+id).value||‘Untitled’;notesRender(id);}};
+document.getElementById(‘notestxt_’+id).oninput=()=>{const n=notesData.find(x=>x.id===notesActive);if(n)n.body=document.getElementById(‘notestxt_’+id).value;};
+document.getElementById(‘notessave_’+id).onclick=()=>showN(‘Notes’,‘Note saved!’,‘📌’);
+notesRender(id);
+}
+function notesRender(id){
+const nl=document.getElementById(‘noteslist_’+id);if(!nl)return;
+nl.innerHTML=’’;
+notesData.forEach(n=>{const el=document.createElement(‘div’);el.className=‘notesitem’+(n.id===notesActive?’ act’:’’);el.innerHTML=`<div class="notesittl">${n.title||'Untitled'}</div><div class="notesiprv">${n.body.slice(0,40).replace(/\n/g,' ')||'(empty)'}</div><div class="notesitm">${n.date}</div>`;el.onclick=()=>{notesActive=n.id;notesRender(id);};nl.appendChild(el);});
+const n=notesData.find(x=>x.id===notesActive);
+const ti=document.getElementById(‘notestitle_’+id),tx=document.getElementById(‘notestxt_’+id),dt=document.getElementById(‘notesdt_’+id);
+if(ti&&n){ti.value=n.title;tx.value=n.body;if(dt)dt.textContent=n.date;}
+}
+function notesDel(id){if(notesData.length<=1){showN(‘Notes’,“Can’t delete last note”,‘⚠️’);return;}notesData=notesData.filter(x=>x.id!==notesActive);notesActive=notesData[0].id;notesRender(id);}
+
+// IMAGE VIEWER
+function buildImageViewer(id,c){
+c.innerHTML=`<div class="imgv">
+<div class="imgvtb">
+<span style="font-size:11px;color:#555;flex:1" id="ivtitle_${id}">No image open</span>
+<button class="ivbtn" id="ivopen_${id}">📷 Open</button>
+<button class="ivbtn" onclick="ivZoom('${id}',1.25)">+ Zoom</button>
+<button class="ivbtn" onclick="ivZoom('${id}',.8)">− Zoom</button>
+<button class="ivbtn" onclick="ivRotate('${id}')">↻ Rotate</button>
+<button class="ivbtn" onclick="ivFit('${id}')">Fit</button>
+</div>
+<div class="imgvcanvas" id="imgvcanvas_${id}">
+<div id="imgvph_${id}" style="text-align:center;color:rgba(255,255,255,.12)">
+<div style="font-size:52px">📷</div>
+<div style="font-size:13px;margin-top:10px">No image open</div>
+<div style="font-size:11px;margin-top:6px;opacity:.5">Click Open or drag & drop an image</div>
+</div>
+</div>
+<div class="imgvinfo" id="imgvinfo_${id}"><span>—</span></div>
+
+  </div>`;
+  c._iv={scale:1,rot:0};
+  document.getElementById('ivopen_'+id).onclick=()=>{const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.onchange=e=>{const file=e.target.files[0];if(!file)return;ivLoad(id,URL.createObjectURL(file),file.name,file.size);};inp.click();};
+  const canvas=document.getElementById('imgvcanvas_'+id);
+  canvas.ondragover=e=>{e.preventDefault();canvas.style.outline='2px dashed #d70751';};
+  canvas.ondragleave=()=>canvas.style.outline='';
+  canvas.ondrop=e=>{e.preventDefault();canvas.style.outline='';const f=e.dataTransfer.files[0];if(f?.type.startsWith('image/'))ivLoad(id,URL.createObjectURL(f),f.name,f.size);};
+}
+function ivLoad(id,url,name,size){
+  const canvas=document.getElementById('imgvcanvas_'+id);const info=document.getElementById('imgvinfo_'+id);const title=document.getElementById('ivtitle_'+id);
+  document.getElementById('imgvph_'+id)?.remove();
+  let img=document.getElementById('ivimg_'+id);
+  if(!img){img=document.createElement('img');img.id='ivimg_'+id;canvas.appendChild(img);}
+  img.src=url;img.style.maxWidth='100%';img.style.maxHeight='100%';img.style.objectFit='contain';
+  img.onload=()=>{if(info)info.innerHTML=`<span>${name}</span><span>${img.naturalWidth}×${img.naturalHeight}px</span><span>${(size/1024).toFixed(1)} KB</span>`;if(title)title.textContent=name;};
+  const wc=document.querySelector(`#wc_${id}`);if(wc)wc._iv={scale:1,rot:0};
+}
+function ivZoom(id,f){const img=document.getElementById('ivimg_'+id);if(!img)return;const wc=document.querySelector(`#wc_${id}`);if(!wc)return;wc._iv.scale=Math.max(.1,Math.min(10,wc._iv.scale*f));img.style.transform=`scale(${wc._iv.scale}) rotate(${wc._iv.rot}deg)`;}
+function ivRotate(id){const img=document.getElementById('ivimg_'+id);if(!img)return;const wc=document.querySelector(`#wc_${id}`);if(!wc)return;wc._iv.rot=(wc._iv.rot+90)%360;img.style.transform=`scale(${wc._iv.scale}) rotate(${wc._iv.rot}deg)`;}
+function ivFit(id){const img=document.getElementById('ivimg_'+id);if(!img)return;const wc=document.querySelector(`#wc_${id}`);if(wc)wc._iv={scale:1,rot:0};img.style.transform='';}
+
+// MUSIC PLAYER
+const mpTracks=[{n:‘Debian Groove’,a:‘System Sounds’,d:‘4:03’,c:‘🎷’},{n:‘Nova Theme’,a:‘Ambient Mix’,d:‘3:00’,c:‘🎸’},{n:‘Terminal Beats’,a:‘NovaOS OST’,d:‘2:48’,c:‘🎹’},{n:‘Kernel Panic Blues’,a:‘Hacker Radio’,d:‘5:12’,c:‘🎺’},{n:‘sudo make music’,a:‘Dev Beats’,d:‘3:33’,c:‘🥁’},{n:‘Blue Screen Waltz’,a:‘Wine Sessions’,d:‘4:17’,c:‘🎻’},{n:‘apt-get groovy’,a:‘Package Beats’,d:‘2:55’,c:‘🎵’},{n:‘root@localhost’,a:‘Terminal Tunes’,d:‘3:44’,c:‘💻’}];
+function buildMusic(id,c){
+c.innerHTML=`<div class="mplay">
+<div class="mpartwork"><div class="mpartworkimg" id="mpaw_${id}">🎵</div></div>
+<div class="mpinfo"><div class="mptitle" id="mptitle_${id}">Debian Groove</div><div class="mpartist" id="mpartist_${id}">System Sounds</div></div>
+<div class="mpcontrols">
+<div class="mpprog">
+<span class="mptime" id="mpcur_${id}">0:00</span>
+<input type="range" id="mpprog_${id}" value="0" min="0" max="100" style="flex:1"/>
+<span class="mptime" style="text-align:right" id="mpdur_${id}">4:03</span>
+</div>
+<div class="mpbtns">
+<button class="mpbtn" id="mpsh_${id}" onclick="mpToggle('${id}','shuffle')" title="Shuffle">🔀</button>
+<button class="mpbtn" onclick="mpPrev('${id}')">⏮</button>
+<button class="mpbtn play" id="mpplay_${id}" onclick="mpPlayPause('${id}')">▶</button>
+<button class="mpbtn" onclick="mpNext('${id}')">⏭</button>
+<button class="mpbtn" id="mpre_${id}" onclick="mpToggle('${id}','repeat')" title="Repeat">🔁</button>
+</div>
+<div class="mpvol"><span class="mpvolico">🔈</span><input type="range" value="80" min="0" max="100" style="flex:1" title="Volume"/><span class="mpvolico">🔊</span></div>
+</div>
+<div class="mplist" id="mplist_${id}"></div>
+
+  </div>`;
+  const list=document.getElementById('mplist_'+id);
+  mpTracks.forEach((t,i)=>{const el=document.createElement('div');el.className='mplitem'+(i===0?' act':'');el.innerHTML=`<span class="mplnum">${i+1}</span><div class="mplname">${t.n}<br><span>${t.a}</span></div><span class="mpldur">${t.d}</span>`;el.ondblclick=()=>{mpLoad(id,i);mpPlayPause(id,true);};list.appendChild(el);});
+  c._mp={track:0,playing:false,prog:0,shuffle:false,repeat:false,int:null};
+}
+function mpLoad(id,ti){const wc=document.querySelector(`#wc_${id}`);if(!wc)return;const s=wc._mp;s.track=ti;s.prog=0;const t=mpTracks[ti];document.getElementById('mptitle_'+id).textContent=t.n;document.getElementById('mpartist_'+id).textContent=t.a;document.getElementById('mpaw_'+id).textContent=t.c;document.getElementById('mpdur_'+id).textContent=t.d;document.getElementById('mpprog_'+id).value=0;document.getElementById('mpcur_'+id).textContent='0:00';document.querySelectorAll(`#mplist_${id} .mplitem`).forEach((el,i)=>el.classList.toggle('act',i===ti));}
+function mpPlayPause(id,forcePlay){const wc=document.querySelector(`#wc_${id}`);if(!wc)return;const s=wc._mp;s.playing=forcePlay!==undefined?forcePlay:!s.playing;const btn=document.getElementById('mpplay_'+id);if(btn)btn.innerHTML=s.playing?'&#9646;&#9646;':'&#9654;';if(s.playing){if(s.int)clearInterval(s.int);const dur=parseInt(mpTracks[s.track].d.replace(':',''))*10||240;s.int=setInterval(()=>{s.prog=Math.min(100,s.prog+100/dur);const prog=document.getElementById('mpprog_'+id);if(prog)prog.value=s.prog;const elapsed=Math.floor(s.prog/100*dur/10);const cur=document.getElementById('mpcur_'+id);if(cur)cur.textContent=`${Math.floor(elapsed/60)}:${String(elapsed%60).padStart(2,'0')}`;if(s.prog>=100){if(s.repeat){s.prog=0;}else mpNext(id);}},1000);}else{if(s.int)clearInterval(s.int);}}
+function mpNext(id){const wc=document.querySelector(`#wc_${id}`);if(!wc)return;const s=wc._mp;mpLoad(id,s.shuffle?Math.floor(Math.random()*mpTracks.length):(s.track+1)%mpTracks.length);if(s.playing)mpPlayPause(id,true);}
+function mpPrev(id){const wc=document.querySelector(`#wc_${id}`);if(!wc)return;const s=wc._mp;mpLoad(id,(s.track-1+mpTracks.length)%mpTracks.length);if(s.playing)mpPlayPause(id,true);}
+function mpToggle(id,f){const wc=document.querySelector(`#wc_${id}`);if(!wc)return;wc._mp[f]=!wc._mp[f];const btn=document.getElementById(`mp${f==='shuffle'?'sh':'re'}_${id}`);if(btn)btn.style.color=wc._mp[f]?'#d70751':'rgba(255,255,255,.55)';}
+
+// SYSTEM MONITOR
+const procs=[{pid:1,n:‘systemd’,cpu:0.0,mem:9,st:‘sleeping’},{pid:438,n:‘dbus-daemon’,cpu:0.1,mem:6,st:‘sleeping’},{pid:601,n:‘nova-desktop’,cpu:2.1,mem:145,st:‘running’},{pid:602,n:‘nova-compositor’,cpu:3.2,mem:210,st:‘running’},{pid:703,n:‘nova-browser’,cpu:4.5,mem:320,st:‘running’},{pid:801,n:‘bash’,cpu:0.0,mem:4,st:‘sleeping’},{pid:900,n:‘nova-panel’,cpu:0.5,mem:38,st:‘running’},{pid:910,n:‘pipewire’,cpu:0.4,mem:30,st:‘running’},{pid:920,n:‘NetworkManager’,cpu:0.1,mem:18,st:‘sleeping’},{pid:930,n:‘Xwayland’,cpu:1.2,mem:88,st:‘running’},{pid:940,n:‘nova-notifs’,cpu:0.1,mem:12,st:‘sleeping’},{pid:950,n:‘nova-store’,cpu:0.0,mem:6,st:‘sleeping’}];
+function buildTaskMan(id,c){
+c.innerHTML=`<div class="smon">
+<div class="smtabs">
+<div class="smt act" id="smta_${id}" onclick="smTab('${id}',this,'proc')">Processes</div>
+<div class="smt" id="smtb_${id}" onclick="smTab('${id}',this,'res')">Resources</div>
+<div class="smt" id="smtc_${id}" onclick="smTab('${id}',this,'fs')">File Systems</div>
+<div class="smt" id="smtd_${id}" onclick="smTab('${id}',this,'net')">Network</div>
+</div>
+<div class="smbody" id="smbody_${id}"></div>
+<div class="smfoot">
+<div class="ubw"><div class="ubl"><span>CPU</span><span id="smcp_${id}">-</span></div><div class="ub" style="width:88px"><div class="ubf ubfc" id="smcpf_${id}" style="width:15%"></div></div></div>
+<div class="ubw"><div class="ubl"><span>RAM</span><span id="smmp_${id}">-</span></div><div class="ub" style="width:88px"><div class="ubf ubfm" id="smmpf_${id}" style="width:40%"></div></div></div>
+<div class="ubw"><div class="ubl"><span>Disk</span><span id="smdp_${id}">-</span></div><div class="ub" style="width:88px"><div class="ubf ubfd" id="smdpf_${id}" style="width:35%"></div></div></div>
+<div style="margin-left:auto;font-size:10px;color:#888">${procs.length} processes</div>
+</div>
+
+  </div>`;
+  smTab(id,document.getElementById('smta_'+id),'proc');
+  initTaskMan(id);
+}
+function smTab(id,el,t){
+  document.querySelectorAll(`#smta_${id},#smtb_${id},#smtc_${id},#smtd_${id}`).forEach(e=>e.classList.remove('act'));el.classList.add('act');
+  const body=document.getElementById('smbody_'+id);
+  if(t==='proc')body.innerHTML=`<table class="smtbl"><thead><tr><th>Process</th><th>PID</th><th>CPU%</th><th>Memory</th><th>Status</th></tr></thead><tbody id="smtbody_${id}"></tbody></table>`;
+  else if(t==='res')body.innerHTML=`<div id="smres_${id}" style="padding:12px;"></div>`;
+  else if(t==='fs')body.innerHTML=`<table class="smtbl"><thead><tr><th>Filesystem</th><th>Size</th><th>Used</th><th>Avail</th><th>Use%</th><th>Mount</th></tr></thead><tbody><tr><td>/dev/sda1</td><td>20G</td><td>7.1G</td><td>12G</td><td>36%</td><td>/</td></tr><tr><td>/dev/sda2</td><td>80G</td><td>42G</td><td>38G</td><td>53%</td><td>/home</td></tr><tr><td>tmpfs</td><td>1G</td><td>1M</td><td>1G</td><td>1%</td><td>/tmp</td></tr></tbody></table>`;
+  else body.innerHTML=`<table class="smtbl"><thead><tr><th>Interface</th><th>RX</th><th>TX</th><th>IP</th><th>Status</th></tr></thead><tbody><tr><td>eth0</td><td>${Math.floor(Math.random()*900+100)} KB/s</td><td>${Math.floor(Math.random()*200+10)} KB/s</td><td>192.168.1.42</td><td style="color:#27ae60">&#9679; Up</td></tr><tr><td>lo</td><td>0 B/s</td><td>0 B/s</td><td>127.0.0.1</td><td style="color:#27ae60">&#9679; Up</td></tr></tbody></table>`;
+}
+function initTaskMan(id){
+  function render(){
+    const tb=document.getElementById('smtbody_'+id);
+    if(tb)tb.innerHTML=procs.map(p=>{const cpu=Math.max(0,(p.cpu+(Math.random()*.8-.4))).toFixed(1);const mem=Math.floor(p.mem+Math.random()*10);return `<tr><td>${p.n}</td><td>${p.pid}</td><td>${cpu}</td><td>${mem} MB</td><td style="color:${p.st==='running'?'#27ae60':'#888'}">&#9679; ${p.st}</td></tr>`;}).join('');
+    const cp=(Math.random()*18+8).toFixed(1),mp=Math.floor(Math.random()*10+38),dp=Math.floor(Math.random()*5+33);
+    ['cp','mp','dp'].forEach((k,i)=>{const v=[cp,mp,dp][i];const s=document.getElementById(`sm${k}f_${id}`);const l=document.getElementById(`sm${k}_${id}`);if(s)s.style.width=v+'%';if(l)l.textContent=v+(i===0?'%':'%');});
+    const res=document.getElementById('smres_'+id);
+    if(res)res.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:11px;color:#444"><div><div style="font-weight:600;margin-bottom:4px">CPU: ${cp}%</div><div class="ub"><div class="ubf ubfc" style="width:${cp}%"></div></div></div><div><div style="font-weight:600;margin-bottom:4px">Memory: ${mp}%</div><div class="ub"><div class="ubf ubfm" style="width:${mp}%"></div></div></div><div><div style="font-weight:600;margin-bottom:4px">Disk I/O: ${dp}%</div><div class="ub"><div class="ubf ubfd" style="width:${dp}%"></div></div></div><div><div style="font-weight:600;margin-bottom:4px">Network: Active</div><div class="ub"><div class="ubf" style="width:20%;background:var(--teal)"></div></div></div></div>`;
+  }
+  render();if(cpuInt)clearInterval(cpuInt);cpuInt=setInterval(render,1500);
+}
+
+// SETTINGS
+const sPages={
+appearance:`<div class="settit">Appearance</div> <div class="setcard"><div class="setct">Theme</div> <div class="setr"><div class="srlab">GTK Theme</div><select class="setsel"><option>Adwaita-Nova</option><option>Adwaita</option><option>Yaru</option><option>Numix</option></select></div> <div class="setr"><div class="srlab">Icon Theme</div><select class="setsel"><option>Papirus-Nova</option><option>Papirus</option><option>Hicolor</option></select></div> <div class="setr"><div class="srlab">Accent Color</div><div style="display:flex;gap:6px">${['#d70751','#26a96c','#4a9eff','#f39c12','#9b59b6'].map(col=>`<div style="width:18px;height:18px;border-radius:50%;background:${col};cursor:pointer;border:2px solid transparent" onclick="this.parentNode.querySelectorAll('div').forEach(x=>x.style.borderColor='transparent');this.style.borderColor='#fff';showN('Appearance','Accent color changed','🎨')"></div>`).join('')}</div></div></div> <div class="setcard"><div class="setct">Window Decorations</div> <div class="setr"><div><div class="srlab">Aero Glass Blur</div><div class="srsub">Vista-style translucency</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div> <div class="setr"><div class="srlab">Animations</div><div class="tog on" onclick="this.classList.toggle('on')"></div></div> <div class="setr"><div><div class="srlab">Button Position</div><div class="srsub">Linux: close/min/max on left</div></div><select class="setsel"><option>Left (Linux)</option><option>Right (Windows)</option></select></div></div>`,
+notifs:`<div class="settit">Notifications</div><div class="setcard"><div class="setct">General</div> <div class="setr"><div class="srlab">Do Not Disturb</div><div class="tog" onclick="this.classList.toggle('on')"></div></div> <div class="setr"><div class="srlab">Notification Sound</div><div class="tog on" onclick="this.classList.toggle('on')"></div></div> <div class="setr"><div class="srlab">Lock Screen Notifications</div><div class="tog on" onclick="this.classList.toggle('on')"></div></div></div>`,
+display:`<div class="settit">Display</div><div class="setcard"><div class="setct">Monitor</div> <div class="setr"><div class="srlab">Resolution</div><select class="setsel"><option>1920×1080</option><option>2560×1440</option><option>3840×2160 (4K)</option></select></div> <div class="setr"><div class="srlab">Refresh Rate</div><select class="setsel"><option>60 Hz</option><option>120 Hz</option><option>144 Hz</option></select></div> <div class="setr"><div class="srlab">Scale</div><select class="setsel"><option>100%</option><option>125%</option><option>150%</option></select></div></div> <div class="setcard"><div class="setct">Night Light</div> <div class="setr"><div><div class="srlab">Night Light</div><div class="srsub">Reduces blue light after sunset</div></div><div class="tog" onclick="this.classList.toggle('on')"></div></div> <div class="setr"><div class="srlab">Color Temperature</div><input type="range" min="1000" max="6500" value="4000" style="flex:1"/></div></div>`,
+sound:`<div class="settit">Sound</div><div class="setcard"><div class="setct">Output</div> <div class="setr"><div class="srlab">Output Device</div><select class="setsel"><option>Built-in Audio (PipeWire)</option><option>HDMI Audio</option><option>Bluetooth Headphones</option></select></div> <div class="setr"><div class="srlab">Volume</div><input type="range" min="0" max="100" value="75" style="flex:1;margin-left:10px"/></div> <div class="setr"><div class="srlab">System Sounds</div><div class="tog on" onclick="this.classList.toggle('on')"></div></div></div> <div class="setcard"><div class="setct">Input</div> <div class="setr"><div class="srlab">Microphone</div><select class="setsel"><option>Built-in Microphone</option><option>USB Microphone</option></select></div></div>`,
+network:`<div class="settit">Network</div><div class="setcard"><div class="setct">Wired</div> <div class="setr"><div><div class="srlab">Connected — eth0</div><div class="srsub">192.168.1.42 · 1 Gbit/s · NovaNet</div></div><span style="color:#27ae60;font-size:11px">&#9679; Active</span></div> <div class="setr"><div class="srlab">Auto-connect</div><div class="tog on" onclick="this.classList.toggle('on')"></div></div></div> <div class="setcard"><div class="setct">Wi-Fi</div> <div class="setr"><div class="srlab">Wi-Fi</div><div class="tog on" onclick="this.classList.toggle('on')"></div></div> <div class="setr"><div><div class="srlab">NovaNet_5G</div><div class="srsub">WPA2 · Connected</div></div><span style="color:#27ae60;font-size:11px">&#9679;</span></div></div> <div class="setcard"><div class="setct">Security</div> <div class="setr"><div><div class="srlab">Firewall (ufw)</div><div class="srsub">Active — blocking incoming</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div> <div class="setr"><div class="srlab">VPN</div><div class="tog" onclick="this.classList.toggle('on')"></div></div></div>`,
+bluetooth:`<div class="settit">Bluetooth</div><div class="setcard"><div class="setct">Bluetooth</div> <div class="setr"><div class="srlab">Bluetooth</div><div class="tog" onclick="this.classList.toggle('on');showN('Bluetooth',this.classList.contains('on')?'Bluetooth on':'Bluetooth off','&#128268;')"></div></div></div> <div class="setcard"><div class="setct">Devices</div> <div class="setr"><div><div class="srlab">No devices paired</div><div class="srsub">Enable Bluetooth to scan</div></div></div></div>`,
+power:`<div class="settit">Power</div><div class="setcard"><div class="setct">Profile</div> <div class="setr"><div class="srlab">Power Profile</div><select class="setsel"><option>Balanced</option><option>Performance</option><option>Power Saver</option></select></div> <div class="setr"><div class="srlab">Screen Brightness</div><input type="range" min="10" max="100" value="80" style="flex:1;margin-left:10px"/></div> <div class="setr"><div class="srlab">Automatic Suspend</div><div class="tog on" onclick="this.classList.toggle('on')"></div></div></div> <div class="setcard"><div class="setct">Battery</div> <div class="setr"><div><div class="srlab">Battery</div><div class="srsub">Estimated 3h 45m remaining</div></div><span style="color:#27ae60;font-size:13px;font-weight:500">87%</span></div> <div class="setr"><div class="srlab">Show Percentage</div><div class="tog on" onclick="this.classList.toggle('on')"></div></div></div>`,
+keyboard:`<div class="settit">Keyboard Shortcuts</div><div class="setcard"><div class="setct">Shortcuts</div> ${[['Super','Open Activities'],['Alt+F4','Close window'],['Ctrl+Alt+T','Open Terminal'],['Ctrl+Alt+F','Open Files'],['Ctrl+Alt+L','Lock screen'],['F11','Screenshot']].map(([k,d])=>`<div class="setr"><div class="srlab">${d}</div><span class="kbd">${k}</span></div>`).join('')}</div>`,
+privacy:`<div class="settit">Privacy</div><div class="setcard"><div class="setct">Location & Data</div> <div class="setr"><div class="srlab">Location Services</div><div class="tog" onclick="this.classList.toggle('on')"></div></div> <div class="setr"><div class="srlab">Usage Statistics</div><div class="tog" onclick="this.classList.toggle('on')"></div></div> <div class="setr"><div><div class="srlab">Clear History</div></div><button class="npb" onclick="showN('Privacy','History cleared','&#128274;')">Clear Now</button></div></div>`,
+users:`<div class="settit">Users</div><div class="setcard"><div class="setct">Current User</div> <div class="setr"><div style="display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px">N</div><div><div class="srlab">nova</div><div class="srsub">Administrator · uid=1000</div></div></div><span style="color:#27ae60;font-size:11px">Active</span></div> <div class="setr"><div class="srlab">Account Type</div><select class="setsel"><option>Administrator</option><option>Standard</option></select></div> <div class="setr"><div class="srlab">Change Password</div><button class="npb" onclick="showN('Users','Password changed','&#128100;')">Change</button></div></div>`,
+updates:`<div class="settit">Software Updates</div><div class="setcard"><div class="setct">apt Updates</div> <div class="setr"><div class="srlab">Automatic Updates</div><div class="tog on" onclick="this.classList.toggle('on')"></div></div> <div class="setr"><div class="srlab">Security Updates</div><div class="tog on" onclick="this.classList.toggle('on')"></div></div> <div class="setr"><div class="srlab">Channel</div><select class="setsel"><option>Stable (bookworm)</option><option>Testing</option><option>Unstable (sid)</option></select></div></div> <div class="setcard"><div class="setct">Status</div> <div class="setr"><div><div class="srlab">System is up to date</div><div class="srsub">Last checked: Today</div></div><button class="npb" onclick="showN('Updates','Checking for updates...','&#128260;')">Check Now</button></div></div>`,
+about:`<div class="settit">About</div><div class="setcard" style="padding:20px;text-align:center"> <div style="font-size:50px;margin-bottom:8px">&#9889;</div> <div style="font-size:22px;font-weight:300;color:#222">Nova<span style="color:#d70751;font-weight:600">OS</span> 1.0</div> <div style="color:#d70751;font-size:12px;margin-bottom:14px">Debian Nova 12 (bookworm)</div> <div style="font-size:11px;color:#666;line-height:2.2;text-align:left;max-width:240px;margin:0 auto"> <div><b>Kernel:</b> 6.5.0-nova-amd64</div><div><b>Desktop:</b> NovaDE 1.0 (GTK4)</div> <div><b>Package Manager:</b> apt 2.6.1</div><div><b>Shell:</b> bash 5.2.15</div> <div><b>Architecture:</b> x86_64</div><div><b>RAM:</b> 2048 MB</div><div><b>Wine:</b> 8.0.2 (64-bit)</div></div></div>`
+};
+function buildSettingsApp(id,c){
+const nav=document.createElement(‘div’);nav.className=‘setnav’;
+const sections=[[‘Personal’,null],[’🎨 Appearance’,‘appearance’],[’🔔 Notifications’,‘notifs’],[‘System’,null],[’💻 Display’,‘display’],[’🔊 Sound’,‘sound’],[’📡 Network’,‘network’],[’🔌 Bluetooth’,‘bluetooth’],[’🔋 Power’,‘power’],[’⌨ Keyboard’,‘keyboard’],[‘Admin’,null],[’🔒 Privacy’,‘privacy’],[’👥 Users’,‘users’],[’🔄 Updates’,‘updates’],[’ℹ About’,‘about’]];
+let firstPage=‘appearance’;
+sections.forEach(([label,page])=>{if(!page){const s=document.createElement(‘div’);s.className=‘setsec’;s.innerHTML=label;nav.appendChild(s);}else{const el=document.createElement(‘div’);el.className=‘setni’+(page===firstPage?’ act’:’’);el.dataset.page=page;el.innerHTML=label;el.onclick=function(){nav.querySelectorAll(’.setni’).forEach(n=>n.classList.remove(‘act’));this.classList.add(‘act’);cont.innerHTML=sPages[page]||’’;};nav.appendChild(el);}});
+const cont=document.createElement(‘div’);cont.className=‘setcont’;cont.innerHTML=sPages[firstPage];
+const wrap=document.createElement(‘div’);wrap.className=‘sett’;wrap.appendChild(nav);wrap.appendChild(cont);c.appendChild(wrap);
+}
+
+// SOFTWARE CENTER
+const pkgs=[
+{n:‘vlc’,v:‘3.0.20’,d:‘Media player for all formats’,cat:‘Media’,ico:‘🎬’,inst:false,r:5},
+{n:‘gimp’,v:‘2.10.36’,d:‘GNU Image Manipulation Program’,cat:‘Graphics’,ico:‘🖼️’,inst:false,r:5},
+{n:‘firefox’,v:‘121.0’,d:‘Mozilla Firefox web browser’,cat:‘Internet’,ico:‘🦊’,inst:false,r:5},
+{n:‘libreoffice’,v:‘7.6.4’,d:‘Full office suite’,cat:‘Office’,ico:‘📋’,inst:false,r:5},
+{n:‘inkscape’,v:‘1.3.2’,d:‘Vector graphics editor’,cat:‘Graphics’,ico:‘✏️’,inst:false,r:4},
+{n:‘obs-studio’,v:‘30.0.2’,d:‘Screen recording and streaming’,cat:‘Media’,ico:‘🎥’,inst:false,r:5},
+{n:‘blender’,v:‘4.0.2’,d:‘3D creation suite’,cat:‘Graphics’,ico:‘🔵’,inst:false,r:5},
+{n:‘code’,v:‘1.85.1’,d:‘Visual Studio Code editor’,cat:‘Development’,ico:‘💻’,inst:false,r:5},
+{n:‘steam’,v:‘1.0.0.76’,d:‘Valve gaming platform’,cat:‘Games’,ico:‘🎮’,inst:false,r:5},
+{n:‘discord’,v:‘0.0.40’,d:‘Voice, video and text chat’,cat:‘Internet’,ico:‘💬’,inst:false,r:4},
+{n:‘thunderbird’,v:‘115.6’,d:‘Mozilla email client’,cat:‘Internet’,ico:‘📧’,inst:false,r:4},
+{n:‘htop’,v:‘3.3.0’,d:‘Interactive process viewer’,cat:‘System’,ico:‘📊’,inst:true,r:5},
+{n:‘wine’,v:‘8.0.2’,d:‘Run Windows apps on Linux’,cat:‘System’,ico:‘🍷’,inst:true,r:4},
+{n:‘neofetch’,v:‘7.1.0’,d:‘System info in terminal’,cat:‘System’,ico:‘🖥️’,inst:true,r:5},
+{n:‘git’,v:‘2.43.0’,d:‘Distributed version control’,cat:‘Development’,ico:‘🔀’,inst:true,r:5},
+{n:‘docker’,v:‘25.0.0’,d:‘Container platform’,cat:‘Development’,ico:‘🐳’,inst:false,r:5},
+{n:‘nginx’,v:‘1.24.0’,d:‘High-performance web server’,cat:‘Server’,ico:‘🌍’,inst:false,r:4},
+{n:‘transmission’,v:‘4.0.4’,d:‘BitTorrent client’,cat:‘Internet’,ico:‘📡’,inst:false,r:4},
+{n:‘gparted’,v:‘1.5.0’,d:‘Partition editor’,cat:‘System’,ico:‘💾’,inst:false,r:4},
+{n:‘gnome-tweaks’,v:‘45.0’,d:‘Advanced GNOME settings’,cat:‘System’,ico:‘🔧’,inst:false,r:4},
+{n:‘flatpak’,v:‘1.15.6’,d:‘Universal app sandbox’,cat:‘System’,ico:‘📦’,inst:false,r:4},
+{n:‘vim’,v:‘9.1.0’,d:‘Configurable text editor’,cat:‘Development’,ico:‘📝’,inst:false,r:4},
+{n:‘audacity’,v:‘3.4.2’,d:‘Multi-track audio editor’,cat:‘Media’,ico:‘🎵’,inst:false,r:4},
+{n:‘kdenlive’,v:‘23.08.4’,d:‘Non-linear video editor’,cat:‘Media’,ico:‘🎞️’,inst:false,r:4},
+{n:‘krita’,v:‘5.2.2’,d:‘Professional digital painting’,cat:‘Graphics’,ico:‘🎨’,inst:false,r:5},
+{n:‘virtualbox’,v:‘7.0.12’,d:‘x86 virtualization’,cat:‘System’,ico:‘🖥️’,inst:false,r:4},
+{n:‘calibre’,v:‘7.1.0’,d:‘E-book management’,cat:‘Office’,ico:‘📚’,inst:false,r:4},
+{n:‘shotcut’,v:‘23.12.02’,d:‘Free video editor’,cat:‘Media’,ico:‘🎬’,inst:false,r:4},
+];
+const sCat={},sQ={};
+function buildStoreApp(id,c){
+const cats=[‘All’,‘Internet’,‘Media’,‘Graphics’,‘Office’,‘Development’,‘Games’,‘System’,‘Server’];
+const hdr=document.createElement(‘div’);hdr.className=‘storehdr’;
+hdr.innerHTML=`<span style="font-size:24px">&#127978;</span><div style="flex:1"><div style="color:#fff;font-size:14px;font-weight:500">Nova Software Center</div><div style="color:rgba(215,7,81,.8);font-size:10px">${pkgs.length} packages · Debian Nova Repository</div></div>`;
+const srch=document.createElement(‘input’);srch.className=‘ssrch’;srch.placeholder=‘Search packages…’;srch.oninput=()=>{sQ[id]=srch.value.toLowerCase();sRender(id);};
+hdr.appendChild(srch);
+const catbar=document.createElement(‘div’);catbar.className=‘storecats’;catbar.id=‘scats_’+id;
+cats.forEach(cat=>{const b=document.createElement(‘div’);b.className=‘scat’+(cat===‘All’?’ act’:’’);b.textContent=cat;b.onclick=()=>{sCat[id]=cat;catbar.querySelectorAll(’.scat’).forEach(x=>x.classList.toggle(‘act’,x.textContent===cat));sRender(id);};catbar.appendChild(b);});
+const grid=document.createElement(‘div’);grid.className=‘sgrid’;grid.id=‘sgrid_’+id;
+const foot=document.createElement(‘div’);foot.className=‘stfoot’;foot.innerHTML=`<span id="scnt_${id}">${pkgs.length} packages</span><span style="color:#d70751">&#127877; Wine-compatible packages available</span>`;
+const wrap=document.createElement(‘div’);wrap.className=‘store’;
+wrap.appendChild(hdr);wrap.appendChild(catbar);wrap.appendChild(grid);wrap.appendChild(foot);c.appendChild(wrap);
+sCat[id]=‘All’;sQ[id]=’’;setTimeout(()=>sRender(id),0);
+}
+function sRender(id){
+const g=document.getElementById(‘sgrid_’+id);if(!g)return;
+const cat=sCat[id]||‘All’,q=sQ[id]||’’;
+const f=pkgs.filter(p=>(cat===‘All’||p.cat===cat)&&(!q||p.n.includes(q)||p.d.toLowerCase().includes(q)||p.cat.toLowerCase().includes(q)));
+const cnt=document.getElementById(‘scnt_’+id);if(cnt)cnt.textContent=`${f.length} package${f.length!==1?'s':''}`;
+g.innerHTML=’’;
+f.forEach(p=>{
+const card=document.createElement(‘div’);card.className=‘scard’;
+card.innerHTML=`<div class="sctop"><span class="scico">${p.ico}</span><div style="flex:1;min-width:0"><div class="scname">${p.n}</div><div class="scver">${p.v} · ${p.cat}</div></div></div><div class="scdesc">${p.d}</div><div class="scfoot"><span class="scstars">${'★'.repeat(p.r)}${'☆'.repeat(5-p.r)}</span></div>`;
+const btn=document.createElement(‘button’);btn.className=‘scbtn ‘+(p.inst?‘ins’:‘ni’);btn.textContent=p.inst?‘✓ Installed’:‘Install’;
+btn.onclick=()=>sInst(id,p.n,btn);card.querySelector(’.scfoot’).appendChild(btn);g.appendChild(card);
+});
+}
+function sInst(wid,pn,btn){
+const p=pkgs.find(x=>x.n===pn);if(!p)return;
+if(p.inst){if(!confirm(`Remove ${p.n}?`))return;p.inst=false;btn.textContent=‘Install’;btn.className=‘scbtn ni’;showN(‘Software Center’,`${p.n} removed.`,‘🏪’);updateInstalledApps();}
+else{btn.textContent=‘Installing…’;btn.className=‘scbtn ing’;btn.disabled=true;setTimeout(()=>{p.inst=true;btn.textContent=‘✓ Installed’;btn.className=‘scbtn ins’;btn.disabled=false;showN(‘Software Center’,`${p.n} installed! Find it in Activities.`,‘✅’);updateInstalledApps();},600+Math.random()*1400);}
+}
+
+// INSTALLED APPS in OVERLAY
+function updateInstalledApps(){
+let grid=document.getElementById(‘installed-apps-grid’);
+if(!grid){
+const ov=document.getElementById(‘ov’);
+const sec=document.createElement(‘div’);sec.id=‘installed-apps-sec’;sec.style.cssText=‘width:100%;max-width:680px;border-top:1px solid rgba(255,255,255,.1);padding-top:14px;margin-top:4px;’;
+const lbl=document.createElement(‘div’);lbl.className=‘ovlabel’;lbl.textContent=‘Installed Apps’;sec.appendChild(lbl);
+grid=document.createElement(‘div’);grid.id=‘installed-apps-grid’;grid.className=‘ovgrid’;sec.appendChild(grid);ov.appendChild(sec);
+}
+const inst=pkgs.filter(p=>p.inst);
+const sec=document.getElementById(‘installed-apps-sec’);if(sec)sec.style.display=inst.length?‘block’:‘none’;
+grid.innerHTML=’’;
+inst.forEach(p=>{const el=document.createElement(‘div’);el.className=‘ovapp’;el.innerHTML=`<div class="oi">${p.ico}</div><span>${p.n}</span>`;el.onclick=()=>{launchInstalledApp(p);closeOv();};grid.appendChild(el);});
+}
+function launchInstalledApp(p){
+const id=‘w_app_’+p.n+’*’+Date.now();const win=document.createElement(‘div’);win.className=‘window active’;win.id=id;win.style.cssText=‘left:120px;top:60px;width:480px;height:320px;’;
+const tb=document.createElement(‘div’);tb.className=‘titlebar’;tb.innerHTML=`<div class="wbtns"><div class="wb wbc"></div><div class="wb wbm"></div><div class="wb wbx"></div></div><span class="wi">${p.ico}</span><span class="wt">${p.n} ${p.v}</span>`;
+tb.querySelector(’.wbc’).onclick=()=>closeWin(id);tb.querySelector(’.wbm’).onclick=()=>minWin(id);tb.querySelector(’.wbx’).onclick=()=>maxWin(id);
+const wc=document.createElement(‘div’);wc.className=‘wcont’;wc.innerHTML=`<div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:linear-gradient(155deg,#1c1c24,#080810);text-align:center;padding:24px"><div style="font-size:64px;filter:drop-shadow(0 4px 14px rgba(0,0,0,.5))">${p.ico}</div><div style="font-size:20px;font-weight:300;color:#fff">${p.n}</div><div style="font-size:11px;color:rgba(215,7,81,.8)">v${p.v} · ${p.cat}</div><div style="width:180px;height:1px;background:rgba(215,7,81,.2)"></div><div style="font-size:11px;color:rgba(255,255,255,.4);line-height:1.8;max-width:280px">${p.d}<br><span style="color:rgba(38,169,108,.7)">&#9679; Running on Debian Nova 12</span></div></div>`;
+const rh=document.createElement(‘div’);rh.className=‘rh’;win.appendChild(tb);win.appendChild(wc);win.appendChild(rh);
+document.getElementById(‘windows’).appendChild(win);wins[id]={type:’app*’+p.n,min:false,max:false,orig:null};
+makeDrag(win,tb);makeResize(win,rh);win.addEventListener(‘mousedown’,()=>focusW(id));focusW(id);upDock();
+}
+
+// ABOUT
+function buildAbout(id,c){
+c.innerHTML=`<div class="about">
+<div style="font-size:58px;filter:drop-shadow(0 0 22px rgba(215,7,81,.6))">⚡</div>
+<div style="font-size:26px;font-weight:300;color:#fff;letter-spacing:2px">Nova<span style="color:#d70751;font-weight:700">OS</span></div>
+<div style="color:rgba(215,7,81,.7);font-size:12px;margin-top:2px">Version 1.0 — Debian Nova · Kernel 6.5</div>
+<div style="width:200px;height:1px;background:rgba(215,7,81,.2);margin:10px 0"></div>
+<div style="font-size:11px;color:rgba(255,255,255,.38);line-height:2.1;text-align:center">
+Debian GNU/Linux 12 (bookworm)<br>
+GTK4 · GNOME · Wine 8.0.2 · apt 2.6.1<br>
+50+ terminal commands · 28 packages<br>
+Calculator · Calendar · Clock · Notes<br>
+Image Viewer · Music Player · Browser<br>
+© 2024 NovaOS Project
+</div>
+<button class="npb" onclick="openApp('settings')" style="margin-top:8px">System Settings</button>
+
+  </div>`;
+}
+
+// START MENU
+function togStart(){
+closeOv();closeQS();closeNC();rmCtx();
+const sm=document.getElementById(‘startmenu’);
+sm.classList.toggle(‘vis’);
+document.getElementById(‘startbtn’).classList.toggle(‘open’,sm.classList.contains(‘vis’));
+if(sm.classList.contains(‘vis’))setTimeout(()=>document.getElementById(‘smsrch’).focus(),50);
+}
+function closeStart(){
+document.getElementById(‘startmenu’).classList.remove(‘vis’);
+document.getElementById(‘startbtn’).classList.remove(‘open’);
+}
+function smLaunch(type){openApp(type);closeStart();}
+function smFilter(q){
+q=q.toLowerCase().trim();
+const pinned=document.getElementById(‘smpinned’);
+const allList=document.getElementById(‘smalllist’);
+const allGrid=document.getElementById(‘smallgrid’);
+if(!q){pinned.style.display=’’;allList.style.display=‘none’;return;}
+pinned.style.display=‘none’;allList.style.display=’’;
+const apps=Object.entries(appCfg);
+const filtered=apps.filter(([k,v])=>v.t.toLowerCase().includes(q)||k.includes(q));
+if(!allGrid)return;
+allGrid.innerHTML=’’;
+if(!filtered.length){allGrid.innerHTML=’<div style="padding:8px 10px;font-size:12px;color:rgba(255,255,255,.3)">No results</div>’;return;}
+filtered.forEach(([type,cfg])=>{
+const el=document.createElement(‘div’);el.className=‘smitem’;
+el.innerHTML=`<span class="smii">${cfg.i}</span><div><div class="smin">${cfg.t}</div></div>`;
+el.onclick=()=>smLaunch(type);allGrid.appendChild(el);
+});
+// also search pkgs
+const instPkgs=pkgs.filter(p=>p.inst&&p.n.includes(q));
+instPkgs.forEach(p=>{const el=document.createElement(‘div’);el.className=‘smitem’;el.innerHTML=`<span class="smii">${p.ico}</span><div><div class="smin">${p.n}</div><div class="smis">Installed</div></div>`;el.onclick=()=>{launchInstalledApp(p);closeStart();};allGrid.appendChild(el);});
+}
+// Close start menu on outside click
+document.getElementById(‘desktop’).addEventListener(‘mousedown’,e=>{
+if(!e.target.closest(’#startmenu’)&&!e.target.closest(’#startbtn’))closeStart();
+},true);
+
+// INIT
+setTimeout(()=>showN(‘Welcome to NovaOS’,‘Debian Nova Kernel 6.5.0 — NovaDE 1.0 ready’,‘⚡’),700);
+setTimeout(()=>showN(‘System’,‘All services started · 3 packages can be upgraded’,‘📦’),2200);
+setTimeout(()=>showN(‘Nova Store’,‘28 packages available · 4 installed’,‘🏪’),3800);
+</script>
+
+</body>
+</html>
